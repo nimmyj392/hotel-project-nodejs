@@ -10,8 +10,7 @@ const paymentDB = require("../models/paymentSchema")
 const generateToken = require('./tokenUtils')
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-
-
+const { checkPreferences } = require("joi")
 
 
 module.exports = {
@@ -186,7 +185,6 @@ module.exports = {
     createChefHelper: (requestData) => {
 
         return new Promise(async (resolve, reject) => {
-            try{ 
             const existingUser = await chefDB.findOne({ email: requestData.email, deleted: false });
 
             if (existingUser !== null) {
@@ -209,22 +207,30 @@ module.exports = {
                     experience: requestData.experience,
                     deleted: requestData.deleted
                 }
-          
+                const dbResponse = await chefDB.insertMany(insertData).then((res) => {
 
-                        resolve(insertData)
+                    if (res) {
+                        const response = {
+                            success: true,
+                            data: res,
+                        }
+
+                        resolve(response)
+                        return;
+                    } else {
+                        const response = {
+                            success: false,
+                            data: dbResponse
+                        }
+                        resolve(response)
                         return;
                     }
-                 } catch (error) {
-                    const errorResponse = {
-                        success: false,
-                        data: error.message || "Internal Server Error"
-                    };
-                    resolve(errorResponse);
-                
-        }
-        });
-        },
-    
+                }).catch((err) => {
+                    console.log(err);
+                })
+            }
+        })
+    },
 
 
     viewChefHelper: async (requestData) => {
