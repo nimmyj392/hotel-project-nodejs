@@ -130,8 +130,8 @@ module.exports = {
             email: req.body.email,
             experience: req.body.experience,
             gender: req.body.gender,
-            phoneNumber: req.body.phonenumber,
-            userType: req.body.usertype,
+            phoneNumber: req.body.phoneNumber,
+            userType: req.body.userType,
             deleted: false
         };
     
