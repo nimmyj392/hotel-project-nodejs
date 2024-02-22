@@ -10,11 +10,8 @@ const paymentDB = require("../models/paymentSchema")
 const generateToken = require('./tokenUtils')
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { checkPreferences } = require("joi")
-const Authy = require('authy');
 
 
-const authy = new Authy('your-authy-api-key');
 
 
 module.exports = {
