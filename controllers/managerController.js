@@ -166,7 +166,7 @@ module.exports = {
                 });
             } else {
              
-                const otp = await authy.phones().verification_start(requestData.phoneNumber, 'sms', { code_length: 6 });
+               
                 req.session.userData = userObject;
                 req.session.otp = otp;
     
