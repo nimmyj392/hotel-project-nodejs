@@ -4,7 +4,8 @@ dotenv.config({ path: "config.env" });
 const mongoose = require("mongoose");
 
 
-const URL = process.env.MONGO_URL || "mongodb://127.0.0.1:27017/restaurantManagement";
+const URL = "mongodb+srv://nimmyjoseph:najiyaJamal3@cluster0.nrqlmqg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0/restaurantManagement";
+
 
 async function connectToDatabase() {
   try {
