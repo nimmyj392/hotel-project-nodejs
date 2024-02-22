@@ -126,7 +126,7 @@ module.exports = {
         const requestData = {
             name: req.body.name,
             password: req.body.password,
-            confirmPassword: req.body.confirmpassword,
+            confirmPassword: req.body.confirmPassword,
             email: req.body.email,
             experience: req.body.experience,
             gender: req.body.gender,
@@ -137,13 +137,13 @@ module.exports = {
     
         console.log(requestData);
     
-        // if (requestData.password !== requestData.confirmPassword) {
-        //     return res.json({
-        //         isSuccess: false,
-        //         response: {},
-        //         error: 'Passwords do not match',
-        //     });
-        // }
+        if (requestData.password !== requestData.confirmPassword) {
+            return res.json({
+                isSuccess: false,
+                response: {},
+                error: 'Passwords do not match',
+            });
+        }
     
         const validatorResponse = await managerDataValidator.createChefValidator(requestData);
     
