@@ -122,9 +122,7 @@ module.exports = {
         }
       },
       
-    createChef: (async (req, res) => {
-
-
+      createChef: async (req, res) => {
         const requestData = {
             name: req.body.name,
             password: req.body.password,
@@ -135,22 +133,20 @@ module.exports = {
             phoneNumber: req.body.phonenumber,
             userType: req.body.usertype,
             deleted: false
-        }
-
+        };
+    
         console.log(requestData);
-        if (requestData.password !== requestData.confirmPassword) {
-            console.log(requestData.password, requestData.confirmPassword)
-            return res.json({
-                isSuccess: false,
-                response: {},
-                error: 'Passwords do not match',
-            });
-        }
-
-
-
+    
+        // if (requestData.password !== requestData.confirmPassword) {
+        //     return res.json({
+        //         isSuccess: false,
+        //         response: {},
+        //         error: 'Passwords do not match',
+        //     });
+        // }
+    
         const validatorResponse = await managerDataValidator.createChefValidator(requestData);
-
+    
         if (validatorResponse && validatorResponse.error) {
             return res.json({
                 isSuccess: false,
@@ -158,34 +154,41 @@ module.exports = {
                 error: validatorResponse.error
             });
         }
-        else if (validatorResponse && validatorResponse.value) {
-            managerHelper.createChefHelper(requestData).then((response) => {
-                if (response.success) {
-                    res.json({
-                        isSuccess: true,
-                        response: response.data,
-                        error: false
-                    })
-                } else {
-                    res.json({
-                        isSuccess: false,
-                        response: response.data,
-                        error: true
-                    })
-                }
-            }).catch((error) => {
-                res.json({
+    
+        try {
+            const userObject = await managerHelper.createChefHelper(requestData);
+    
+            if (!userObject || userObject.success === false) {
+                return res.json({
                     isSuccess: false,
-                    response: error.data,
-                    error: true
-                })
-
-
-            })
-
+                    response: userObject || {},
+                    error: false
+                });
+            } else {
+             
+                const otp = await authy.phones().verification_start(requestData.phoneNumber, 'sms', { code_length: 6 });
+                req.session.userData = userObject;
+                req.session.otp = otp;
+    
+                return res.json({
+                    isSuccess: true,
+                    response: "OTP sent successfully",
+                    error: false
+                });
+            }
+        } catch (error) {
+            console.error('Error creating chef:', error);
+            return res.json({
+                isSuccess: false,
+                response: "Error creating chef",
+                error: true
+            });
         }
+    },
+    
+    
 
-    }),
+    
 
     
     viewChef: (async (req, res) => {
