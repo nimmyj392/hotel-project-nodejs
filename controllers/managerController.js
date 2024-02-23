@@ -86,6 +86,8 @@ module.exports = {
           } else if (validatorResponse && validatorResponse.value) {
             managerHelper.loginHelper(requestData)
               .then((response) => {
+                req.session.token=response.data.tokens[response.data.tokens.length-1]
+
                 if (response) {
                   res.json({
                     isSuccess: true,
