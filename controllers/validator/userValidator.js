@@ -215,7 +215,7 @@ function forgotPasswordValidator(requestData) {
     try {
         const schema = Joi.object().keys({
             email: Joi.string().required(),
-            newPassword: Joi.string().required()
+            password: Joi.string().required()
         })
 
         const { error, value } = schema.validate(requestData);

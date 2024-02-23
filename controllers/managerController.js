@@ -1,12 +1,22 @@
 const { model } = require("mongoose");
 const managerHelper = require("../helpers/managerHelper");
 const managerDataValidator = require("../controllers/validator/managerValidator");
+const nodemailer = require('nodemailer');
+const cashierDB = require("../models/userModels/cashierSchema")
+const supplierDB = require("../models/userModels/supplierSchema")
+const managerDB = require("../models/managerModels/managerSchema")
+const chefDB = require("../models/userModels/chefSchema")
 
+const transporter = nodemailer.createTransport({
+    service: 'gmail', 
+    auth: {
+        user: 'nimmyj392@gmail.com', 
+        pass: 'rzsg wvce kpms olsm' 
+    }
+});
 
 module.exports = {
-
-    createManager: (async (req, res) => {
-
+    createManager: async (req, res) => {
         const requestData = {
             name: req.body.name,
             password: req.body.password,
@@ -17,13 +27,10 @@ module.exports = {
             phoneNumber: req.body.phoneNumber,
             userType: req.body.userType,
             deleted: false
-        }
-
+        };
+    
 
         if (requestData.password !== requestData.confirmPassword) {
-
-
-
             return res.json({
                 isSuccess: false,
                 response: {},
@@ -31,45 +38,43 @@ module.exports = {
             });
         }
 
+      
 
-        const validatorResponse = await managerDataValidator.createManagerValidator(requestData);
-
-        if (validatorResponse && validatorResponse.error) {
-            return res.json({
-                isSuccess: false,
-                response: {},
-                error: validatorResponse.error
-            });
-        }
-        else if (validatorResponse && validatorResponse.value) {
-            managerHelper.createManagerHelper(requestData).then((response) => {
-                if (response.success) {
-                    res.json({
-                        isSuccess: true,
-                        response: response.data,
-                        error: false
-                    })
-                } else {
-                    res.json({
-                        isSuccess: false,
-                        response: response.data,
-                        error: true
-                    })
-                }
-            }).catch((error) => {
+       const validatorResponse = await managerDataValidator.createManagerValidator(requestData);
+      
+       if(validatorResponse && validatorResponse.error){
+        res.json({
+            isSuccess: false,
+            response: validatorResponse.error,
+            error : true
+        })
+       }else if (validatorResponse && validatorResponse.value){
+        managerHelper.createManagerHelper(requestData).then((response)=>{
+            
+            if(response.success){
+                res.json({
+                    isSuccess: true,
+                    response: response.data,
+                    error : false
+                })
+            }else{
                 res.json({
                     isSuccess: false,
-                    response: error.data,
-                    error: true
+                    response: response.data,
+                    error : true
                 })
+            }
+        }).catch((error)=>{
+            res.json({
+             isSuccess: false,
+             response: error.data,
+             error:true
+            }) 
 
 
-            })
-
-        }
-
-    }),
-
+         })
+       }
+    },
 
     login: async (req, res) => {
         const requestData = {
@@ -122,9 +127,7 @@ module.exports = {
         }
       },
       
-    createChef: (async (req, res) => {
-
-
+      createChef: async (req, res) => {
         const requestData = {
             name: req.body.name,
             password: req.body.password,
@@ -135,11 +138,10 @@ module.exports = {
             phoneNumber: req.body.phoneNumber,
             userType: req.body.userType,
             deleted: false
-        }
+        };
+    
 
-        console.log(requestData);
         if (requestData.password !== requestData.confirmPassword) {
-            console.log(requestData.password, requestData.confirmPassword)
             return res.json({
                 isSuccess: false,
                 response: {},
@@ -147,47 +149,43 @@ module.exports = {
             });
         }
 
+      
 
-
-        const validatorResponse = await managerDataValidator.createChefValidator(requestData);
-
-        if (validatorResponse && validatorResponse.error) {
-            return res.json({
-                isSuccess: false,
-                response: {},
-                error: validatorResponse.error
-            });
-        }
-        else if (validatorResponse && validatorResponse.value) {
-            managerHelper.createChefHelper(requestData).then((response) => {
-                if (response.success) {
-                    res.json({
-                        isSuccess: true,
-                        response: response.data,
-                        error: false
-                    })
-                } else {
-                    res.json({
-                        isSuccess: false,
-                        response: response.data,
-                        error: true
-                    })
-                }
-            }).catch((error) => {
+       const validatorResponse = await managerValidator.createChefValidator(requestData);
+      
+       if(validatorResponse && validatorResponse.error){
+        res.json({
+            isSuccess: false,
+            response: validatorResponse.error,
+            error : true
+        })
+       }else if (validatorResponse && validatorResponse.value){
+        managerHelper.createChefHelper(requestData).then((response)=>{
+            
+            if(response.success){
+                res.json({
+                    isSuccess: true,
+                    response: response.data,
+                    error : false
+                })
+            }else{
                 res.json({
                     isSuccess: false,
-                    response: error.data,
-                    error: true
+                    response: response.data,
+                    error : true
                 })
+            }
+        }).catch((error)=>{
+            res.json({
+             isSuccess: false,
+             response: error.data,
+             error:true
+            }) 
 
 
-            })
-
-        }
-
-    }),
-
-    
+         })
+       }
+    },
     viewChef: (async (req, res) => {
         const requestData = {
             deleted: false
@@ -223,9 +221,7 @@ module.exports = {
         })
 
     }),
-    createSupplier: (async (req, res) => {
-
-
+    createSupplier: async (req, res) => {
         const requestData = {
             name: req.body.name,
             password: req.body.password,
@@ -236,8 +232,8 @@ module.exports = {
             phoneNumber: req.body.phoneNumber,
             userType: req.body.userType,
             deleted: false
-        }
-
+        };
+    
 
         if (requestData.password !== requestData.confirmPassword) {
             return res.json({
@@ -247,47 +243,44 @@ module.exports = {
             });
         }
 
+      
 
-
-        const validatorResponse = await managerDataValidator.createSupplierValidator(requestData);
-
-        if (validatorResponse && validatorResponse.error) {
-            return res.json({
-                isSuccess: false,
-                response: {},
-                error: validatorResponse.error
-            });
-        }
-        else if (validatorResponse && validatorResponse.value) {
-            managerHelper.createSupplierHelper(requestData).then((response) => {
-                if (response.success) {
-                    res.json({
-                        isSuccess: true,
-                        response: response.data,
-                        error: false
-                    })
-                } else {
-                    res.json({
-                        isSuccess: false,
-                        response: response.data,
-                        error: true
-                    })
-                }
-            }).catch((error) => {
+       const validatorResponse = await managerDataValidator.createSupplierValidator(requestData);
+      
+       if(validatorResponse && validatorResponse.error){
+        res.json({
+            isSuccess: false,
+            response: validatorResponse.error,
+            error : true
+        })
+       }else if (validatorResponse && validatorResponse.value){
+        managerHelper.createSupplierHelper(requestData).then((response)=>{
+            
+            if(response.success){
+                res.json({
+                    isSuccess: true,
+                    response: response.data,
+                    error : false
+                })
+            }else{
                 res.json({
                     isSuccess: false,
-                    response: error.data,
-                    error: true
+                    response: response.data,
+                    error : true
                 })
+            }
+        }).catch((error)=>{
+            res.json({
+             isSuccess: false,
+             response: error.data,
+             error:true
+            }) 
 
 
-            })
+         })
+       }
+    },
 
-        }
-
-    }),
-
-   
     viewSupplier: (async (req, res) => {
         const requestData = {
             deleted: false
@@ -323,9 +316,7 @@ module.exports = {
         })
 
     }),
-    createCashier: (async (req, res) => {
-
-
+    createCashier: async (req, res) => {
         const requestData = {
             name: req.body.name,
             password: req.body.password,
@@ -336,8 +327,8 @@ module.exports = {
             phoneNumber: req.body.phoneNumber,
             userType: req.body.userType,
             deleted: false
-        }
-
+        };
+    
 
         if (requestData.password !== requestData.confirmPassword) {
             return res.json({
@@ -347,46 +338,44 @@ module.exports = {
             });
         }
 
+      
 
-        const validatorResponse = await managerDataValidator.createCashierValidator(requestData);
-
-        if (validatorResponse && validatorResponse.error) {
-            return res.json({
-                isSuccess: false,
-                response: {},
-                error: validatorResponse.error
-            });
-        }
-        else if (validatorResponse && validatorResponse.value) {
-            managerHelper.createCashierHelper(requestData).then((response) => {
-                if (response.success) {
-                    res.json({
-                        isSuccess: true,
-                        response: response.data,
-                        error: false
-                    })
-                } else {
-                    res.json({
-                        isSuccess: false,
-                        response: response.data,
-                        error: true
-                    })
-                }
-            }).catch((error) => {
+       const validatorResponse = await managerDataValidator.createCashierValidator(requestData);
+      
+       if(validatorResponse && validatorResponse.error){
+        res.json({
+            isSuccess: false,
+            response: validatorResponse.error,
+            error : true
+        })
+       }else if (validatorResponse && validatorResponse.value){
+        managerHelper.createCashierHelper(requestData).then((response)=>{
+            
+            if(response.success){
+                res.json({
+                    isSuccess: true,
+                    response: response.data,
+                    error : false
+                })
+            }else{
                 res.json({
                     isSuccess: false,
-                    response: error.data,
-                    error: true
+                    response: response.data,
+                    error : true
                 })
+            }
+        }).catch((error)=>{
+            res.json({
+             isSuccess: false,
+             response: error.data,
+             error:true
+            }) 
 
 
-            })
+         })
+       }
+    },
 
-        }
-
-    }),
-
-    
     viewCashier: (async (req, res) => {
         const requestData = {
             deleted: false

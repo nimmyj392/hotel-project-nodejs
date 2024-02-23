@@ -14,21 +14,17 @@ const { checkPreferences } = require("joi")
 
 
 module.exports = {
-
-    createManagerHelper: (requestData) => {
-
-        return new Promise(async (resolve, reject) => {
+    createManagerHelper: async (requestData) => {
+        try {
             const existingUser = await managerDB.findOne({ email: requestData.email, deleted: false });
-
+    
             if (existingUser !== null) {
                 const response = {
                     success: false,
                     data: "This email-Id is taken, try another one",
                 };
-                resolve(response);
-                return;
-            }
-            else {
+                resolve(response) ;
+            } else {
                 const hashedPassword = await bcrypt.hash(requestData.password, 10);
                 let insertData = {
                     name: requestData.name,
@@ -39,31 +35,34 @@ module.exports = {
                     userType: requestData.userType,
                     experience: requestData.experience,
                     deleted: requestData.deleted
+                };
+    
+                const dbResponse = await managerDB.insertMany(insertData);
+                if (dbResponse) {
+                    const response = {
+                        success: true,
+                        data: dbResponse,
+                    };
+                    resolve(response)
+                } else {
+                    const response = {
+                        success: false,
+                        data: dbResponse,
+                    };
+                    resolve(response)
                 }
-                const dbResponse = await managerDB.insertMany(insertData).then((res) => {
-
-                    if (res) {
-                        const response = {
-                            success: true,
-                            data: res,
-                        }
-
-                        resolve(response)
-                        return;
-                    } else {
-                        const response = {
-                            success: false,
-                            data: dbResponse
-                        }
-                        resolve(response)
-                        return;
-                    }
-                }).catch((err) => {
-                    console.log(err);
-                })
             }
-        })
+        } catch (error) {
+            console.error(error);
+            const response = {
+                success: false,
+                data: error.message || "An error occurred while creating chef",
+            };
+            reject(response)
+        }
     },
+    
+
 
     loginHelper: (requestData) => {
 
@@ -182,20 +181,17 @@ module.exports = {
 
         })
     },
-    createChefHelper: (requestData) => {
-
-        return new Promise(async (resolve, reject) => {
+    createChefHelper: async (requestData) => {
+        try {
             const existingUser = await chefDB.findOne({ email: requestData.email, deleted: false });
-
+    
             if (existingUser !== null) {
                 const response = {
                     success: false,
                     data: "This email-Id is taken, try another one",
                 };
-                resolve(response);
-                return;
-            }
-            else {
+                resolve(response) ;
+            } else {
                 const hashedPassword = await bcrypt.hash(requestData.password, 10);
                 let insertData = {
                     name: requestData.name,
@@ -206,31 +202,33 @@ module.exports = {
                     userType: requestData.userType,
                     experience: requestData.experience,
                     deleted: requestData.deleted
+                };
+    
+                const dbResponse = await chefDB.insertMany(insertData);
+                if (dbResponse) {
+                    const response = {
+                        success: true,
+                        data: dbResponse,
+                    };
+                    resolve(response)
+                } else {
+                    const response = {
+                        success: false,
+                        data: dbResponse,
+                    };
+                    resolve(response)
                 }
-                const dbResponse = await chefDB.insertMany(insertData).then((res) => {
-
-                    if (res) {
-                        const response = {
-                            success: true,
-                            data: res,
-                        }
-
-                        resolve(response)
-                        return;
-                    } else {
-                        const response = {
-                            success: false,
-                            data: dbResponse
-                        }
-                        resolve(response)
-                        return;
-                    }
-                }).catch((err) => {
-                    console.log(err);
-                })
             }
-        })
+        } catch (error) {
+            console.error(error);
+            const response = {
+                success: false,
+                data: error.message || "An error occurred while creating chef",
+            };
+            reject(response)
+        }
     },
+    
 
 
     viewChefHelper: async (requestData) => {
@@ -333,20 +331,17 @@ module.exports = {
 
         })
     },
-    createSupplierHelper: (requestData) => {
-
-        return new Promise(async (resolve, reject) => {
+    createSupplierHelper: async (requestData) => {
+        try {
             const existingUser = await supplierDB.findOne({ email: requestData.email, deleted: false });
-
+    
             if (existingUser !== null) {
                 const response = {
                     success: false,
                     data: "This email-Id is taken, try another one",
                 };
-                resolve(response);
-                return;
-            }
-            else {
+                resolve(response) ;
+            } else {
                 const hashedPassword = await bcrypt.hash(requestData.password, 10);
                 let insertData = {
                     name: requestData.name,
@@ -357,32 +352,33 @@ module.exports = {
                     userType: requestData.userType,
                     experience: requestData.experience,
                     deleted: requestData.deleted
+                };
+    
+                const dbResponse = await supplierDB.insertMany(insertData);
+                if (dbResponse) {
+                    const response = {
+                        success: true,
+                        data: dbResponse,
+                    };
+                    resolve(response)
+                } else {
+                    const response = {
+                        success: false,
+                        data: dbResponse,
+                    };
+                    resolve(response)
                 }
-                const dbResponse = await supplierDB.insertMany(insertData).then((res) => {
-
-                    if (res) {
-                        const response = {
-                            success: true,
-                            data: res,
-                        }
-
-                        resolve(response)
-                        return;
-                    } else {
-                        const response = {
-                            success: false,
-                            data: dbResponse
-                        }
-                        resolve(response)
-                        return;
-                    }
-                }).catch((err) => {
-                    console.log(err);
-                })
             }
-        })
+        } catch (error) {
+            console.error(error);
+            const response = {
+                success: false,
+                data: error.message || "An error occurred while creating chef",
+            };
+            reject(response)
+        }
     },
-
+    
     viewSupplierHelper: (requestData) => {
 
         return new Promise(async (resolve, reject) => {
@@ -464,20 +460,17 @@ module.exports = {
 
         })
     },
-    createCashierHelper: (requestData) => {
-
-        return new Promise(async (resolve, reject) => {
+    createCashierHelper: async (requestData) => {
+        try {
             const existingUser = await cashierDB.findOne({ email: requestData.email, deleted: false });
-
+    
             if (existingUser !== null) {
                 const response = {
                     success: false,
                     data: "This email-Id is taken, try another one",
                 };
-                resolve(response);
-                return;
-            }
-            else {
+                resolve(response) ;
+            } else {
                 const hashedPassword = await bcrypt.hash(requestData.password, 10);
                 let insertData = {
                     name: requestData.name,
@@ -488,32 +481,33 @@ module.exports = {
                     userType: requestData.userType,
                     experience: requestData.experience,
                     deleted: requestData.deleted
+                };
+    
+                const dbResponse = await cashierDB.insertMany(insertData);
+                if (dbResponse) {
+                    const response = {
+                        success: true,
+                        data: dbResponse,
+                    };
+                    resolve(response)
+                } else {
+                    const response = {
+                        success: false,
+                        data: dbResponse,
+                    };
+                    resolve(response)
                 }
-                const dbResponse = await cashierDB.insertMany(insertData).then((res) => {
-
-                    if (res) {
-                        const response = {
-                            success: true,
-                            data: res,
-                        }
-
-                        resolve(response)
-                        return;
-                    } else {
-                        const response = {
-                            success: false,
-                            data: dbResponse
-                        }
-                        resolve(response)
-                        return;
-                    }
-                }).catch((err) => {
-                    console.log(err);
-                })
             }
-        })
+        } catch (error) {
+            console.error(error);
+            const response = {
+                success: false,
+                data: error.message || "An error occurred while creating chef",
+            };
+            reject(response)
+        }
     },
-
+    
 
     viewCashierHelper: (requestData) => {
 
@@ -741,9 +735,9 @@ module.exports = {
             await dish.save();
     
             const response = {
-                success: false,
+                success: true,
                 data: dish,
-                error: true
+                error: false
             }
             resolve(response)
             return;

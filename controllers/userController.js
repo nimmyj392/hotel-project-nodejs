@@ -659,43 +659,125 @@ collectPaymentInCash: (async (req, res) => {
 
 
 }),
-forgotPassword: (async (req, res) => {
-        
-    const requestData = {
-        email: req.body.email,
-        newPassword: req.body.newPassword
-    };
+forgotPassword: async (req, res) => {
+    try {
+        const requestData = {
+            email: req.body.email,
+            password: req.body.password
+        };
 
-const validatorResponse = await userDataValidator.forgotPasswordValidator(requestData);
+        const validatorResponse = await userDataValidator.forgotPasswordValidator(requestData);
 
-if (validatorResponse && validatorResponse.error) {
-    res.json({
-        isSuccess: false,
-        response: {},
-        error: validatorResponse.error
-    })
-}
-else if (validatorResponse && validatorResponse.value) {
-    userHelper.forgotPasswordHelper(requestData).then((response) => {
-
-        if (response.success) {
-            res.json({
-                isSuccess: true,
-                response: response.data,
-                error: false
-            })
-        } else {
-            res.json({
+        if (validatorResponse && validatorResponse.error) {
+            return res.json({
                 isSuccess: false,
                 response: {},
-                error: response.data
-            })
-        }
-    })
-}
-}),
+                error: validatorResponse.error
+            });
+        } else if (validatorResponse && validatorResponse.value) {
+      
+        
+                const otp = Math.floor(100000 + Math.random() * 900000);
 
- 
+                req.session.otp = otp;
+                req.session.password = requestData.password;
+
+                await transporter.sendMail({
+                    from: 'nimmyj392@gmail.com',
+                    to: requestData.email,
+                    subject: 'OTP for Account Verification',
+                    text: `Your OTP (One Time Password) is: ${otp}. Please use this OTP to verify your account.`
+                });
+                console.log('OTP sent to email:', requestData.email);
+
+                return res.json({
+                    isSuccess: true,
+                    response: "OTP sent successfully",
+                    error: false
+                });
+            
+        }
+    } catch (error) {
+        console.error('Error sending OTP:', error);
+        return res.json({
+            isSuccess: false,
+            response: "Error sending OTP",
+            error: true
+        });
+    }
+},
+verifyOTPAndStoreUser: async (req, res) => {
+    const otp = req.body.otp;
+    const userType = req.body.userType;
+    const storedOTP = req.session.otp;
+
+    // Check if OTP matches the stored OTP
+    if (otp !== storedOTP) {
+        return res.json({
+            isSuccess: false,
+            response: {},
+            error: 'Invalid OTP',
+        });
+    }
+
+    let userData;
+    switch (userType) {
+        case 'chef':
+        case 'manager':
+        case 'supplier':
+        case 'cashier':
+            userData = req.session.userObject;
+            break;
+        default:
+            return res.json({
+                isSuccess: false,
+                response: {},
+                error: 'Invalid userType',
+            });
+    }
+
+    let dbResponse;
+    try {
+       
+        switch (userType) {
+            case 'chef':
+               
+                dbResponse = await chefDB.findOneAndUpdate({ email: userData.email }, { password: req.session.password });
+                break;
+            case 'manager':
+                dbResponse = await managerDB.findOneAndUpdate({ email: userData.email }, { password: req.session.password });
+                break;
+            case 'supplier':
+                dbResponse = await supplierDB.findOneAndUpdate({ email: userData.email }, { password: req.session.password });
+                break;
+            case 'cashier':
+                dbResponse = await cashierDB.findOneAndUpdate({ email: userData.email }, { password: req.session.password });
+                break;
+        }
+        
+        if (dbResponse) {
+            return res.json({
+                isSuccess: true,
+                response: dbResponse,
+                error: null,
+            });
+        } else {
+            return res.json({
+                isSuccess: false,
+                response: {},
+                error: 'Failed to update password in the database',
+            });
+        }
+    } catch (error) {
+        return res.json({
+            isSuccess: false,
+            response: {},
+            error: error.message || 'An error occurred while updating password in the database',
+        });
+    }
+},
+
+
 cancelOrder: (async (req, res) => {
     const requestData = {
         orderId: req.body.orderId
