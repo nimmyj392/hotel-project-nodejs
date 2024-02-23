@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
 
 module.exports = {
     verifyToken: (role) => {
@@ -13,30 +14,25 @@ module.exports = {
                 });
             }
 
-            // Check if the token stored in session matches the token from the client
-            const sessionToken = req.session.token;
-            if (!sessionToken || sessionToken !== clientToken) {
-                return res.status(401).json({
-                    isSuccess: false,
-                    response: {},
-                    error: "Invalid token"
-                });
-            }
-
             try {
                 let secretKey;
+                let User;
                 switch (role) {
                     case 'manager':
                         secretKey = process.env.MANAGER_SECRET_KEY;
+                        User = require("../models/managerModels/managerSchema") 
                         break;
                     case 'chef':
                         secretKey = process.env.CHEF_SECRET_KEY;
+                        User = require("../models/userModels/chefSchema"); 
                         break;
                     case 'cashier':
                         secretKey = process.env.CASHIER_SECRET_KEY;
+                        User = require("../models/userModels/cashierSchema"); 
                         break;
                     case 'supplier':
                         secretKey = process.env.SUPPLIER_SECRET_KEY;
+                        User = require("../models/userModels/supplierSchema") 
                         break;
                     default:
                         return res.status(401).json({
@@ -48,10 +44,31 @@ module.exports = {
 
                 const decoded = jwt.verify(clientToken, secretKey);
 
+               
+                const user = await User.findOne({ _id: decoded.userId });
+
+                if (!user) {
+                    return res.status(401).json({
+                        isSuccess: false,
+                        response: {},
+                        error: "User not found"
+                    });
+                }
+
+                const latestTokenFromDatabase = user.tokens[user.tokens.length - 1];
+
+                if (clientToken !== latestTokenFromDatabase) {
+                    return res.status(401).json({
+                        isSuccess: false,
+                        response: {},
+                        error: "Invalid token"
+                    });
+                }
+
                 req.userId = decoded.userId;
                 req.userType = decoded.userType;
 
-                next(); // Call next to pass control to the next middleware/route handler
+                next(); 
             } catch (err) {
                 console.error('Error in token verification:', err);
                 return res.status(401).json({

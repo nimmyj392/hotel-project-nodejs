@@ -35,8 +35,7 @@ function generateToken(user, userRole) {
         userType: user.userType
     };
     const token = jwt.sign(payload, secretKey, { expiresIn: '48h' });
-    // req.session.token = token
-    return token;
+     return token;
 }
 
 module.exports = generateToken;

@@ -820,7 +820,8 @@ cancelOrder: (async (req, res) => {
 }),
 logOut: (async (req, res) => {
     const requestData = {
-        userId: req.userId
+        userId: req.userId,
+        userType: req.userType
     }
     const validatorResponse = await userDataValidator.logOutValidator(requestData);
 

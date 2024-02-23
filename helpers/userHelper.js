@@ -872,49 +872,59 @@ cancelOrderHelper: async (requestData) => {
     }
 });
 },
-logOutHelper : (requestData,req)=>{
-     
-    return new Promise(async (resolve, reject)=>{
+ 
+
+
+
+    logOutHelper: async (requestData, req) => {
         try {
-            const user = await userDB.findById(requestData.userId);
-             
-            if (!user) {
-                
-                const response = {
-                    success: false,
-                    data: "User not found",
-                };
-                resolve(response);
-                return;
+            let UserDB;
+            
+            
+            switch (requestData.userType) {
+                case 'manager':
+                    UserDB = ManagerDB;
+                    break;
+                case 'chef':
+                    UserDB = ChefDB;
+                    break;
+                case 'supplier':
+                    UserDB = SupplierDB;
+                    break;
+                case 'cashier':
+                    UserDB = CashierDB;
+                    break;
+                default:
+                    return { success: false, data: "Invalid user type" };
             }
-             req.session.destroy((err) => {
-               
-                    if (err) {
-                
-                        const response = {
-                            success: false,
-                            data:"logout failed",
-                        };
-                        resolve(response);
-                    } else {
-                        
-                        const response = {
-                            success: true,
-                            data: "successfully logout!",
-                        };
-                        resolve(response);
-                    }
-                  });
-           
-         
-         
+
+            
+            const user = await UserDB.findById(requestData.userId);
+
+            if (!user) {
+                return { success: false, data: "User not found" ,error:false};
+            }
+            
+          
+            const latestTokenIndex = user.tokens.length - 1;
+            if (latestTokenIndex >= 0) {
+                const latestToken = user.tokens[latestTokenIndex];
+                if (latestToken === req.headers['authorization']) {
+                    user.tokens.splice(latestTokenIndex, 1);
+                }
+            }
+
+        
+            await user.save();
+
+            return { success: true, data: "Logout successful" };
         } catch (error) {
-            
-            console.log(error);
-            
-        } 
-
-    })
+            console.error('Error in logOutHelper:', error);
+            return { success: false, data: "Internal Server Error" ,error:true};
+        }
+    }
 }
 
-}
+
+
+
