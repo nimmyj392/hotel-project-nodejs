@@ -12,12 +12,22 @@ module.exports = {
             const clientToken = req.headers['authorization'];
 
             if (!clientToken) {
-                return res.status(401).json({
+               const response = {
                     isSuccess: false,
                     response: {},
                     error: "No token provided"
-                });
+                };
+                resolve(response)
             }
+            const sessionToken = req.session.token;
+            if (!req.session || !req.session.token || req.session.token !== clientToken) {
+                const response = {
+                    isSuccess: false,
+                    response: {},
+                    error: "Invalid token"
+                };
+                resolve(response)
+                    }
             try {
                 let secretKey;
                 switch (role) {
@@ -45,15 +55,16 @@ module.exports = {
 
                 req.userId = decoded.userId;
                 req.userType = decoded.userType
-                // Additional checks or actions can be added here if needed
+                
 
                 next();
             } catch (err) {
-                return res.status(401).json({
+                const response = {
                     isSuccess: false,
                     response: {},
-                    error: "Authentication failed"
-                });
+                    error: "error in verification"
+                };
+                resolve(response)
             }
         }
     }

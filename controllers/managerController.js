@@ -1,19 +1,11 @@
 const { model } = require("mongoose");
 const managerHelper = require("../helpers/managerHelper");
 const managerDataValidator = require("../controllers/validator/managerValidator");
-const nodemailer = require('nodemailer');
 const cashierDB = require("../models/userModels/cashierSchema")
 const supplierDB = require("../models/userModels/supplierSchema")
 const managerDB = require("../models/managerModels/managerSchema")
 const chefDB = require("../models/userModels/chefSchema")
 
-const transporter = nodemailer.createTransport({
-    service: 'gmail', 
-    auth: {
-        user: 'nimmyj392@gmail.com', 
-        pass: 'rzsg wvce kpms olsm' 
-    }
-});
 
 module.exports = {
     createManager: async (req, res) => {

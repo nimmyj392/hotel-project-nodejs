@@ -1,7 +1,7 @@
 const dotenv = require("dotenv");
 dotenv.config({ path: "config.env" });
 const jwt = require("jsonwebtoken");
-
+const session = require("express-session");
 
 function generateToken(user, userRole) {
 
@@ -34,7 +34,9 @@ function generateToken(user, userRole) {
         userId: user._id,
         userType: user.userType
     };
-    return jwt.sign(payload, secretKey, { expiresIn: '24h' });
+    const token = jwt.sign(payload, secretKey, { expiresIn: '48h' });
+    req.session.token = token
+    return token;
 }
 
 module.exports = generateToken;

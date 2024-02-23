@@ -2,8 +2,16 @@ const { model } = require("mongoose");
 const userHelper = require("../helpers/userHelper");
 const userDataValidator = require("../controllers/validator/userValidator");
 // const userDB = require("../models/userModels/userSchema")
+const nodemailer = require('nodemailer');
+require('dotenv').config();
 
-
+const transporter = nodemailer.createTransport({
+    service: 'gmail', 
+    auth: {
+        user: process.env.EMAIL_USER, 
+        pass: process.env.EMAIL_PASS 
+    }
+});
 
 module.exports = {
     addFoodByChef: (async (req, res) => {
@@ -810,4 +818,37 @@ cancelOrder: (async (req, res) => {
         })
     }
 }),
+logOut: (async (req, res) => {
+    const requestData = {
+        userId: req.userId
+    }
+    const validatorResponse = await userDataValidator.logOutValidator(requestData);
+
+    if (validatorResponse && validatorResponse.error) {
+        res.json({
+            isSuccess: false,
+            response: {},
+            error: validatorResponse.error
+        })
+    }
+    else if (validatorResponse && validatorResponse.value) {
+        userHelper.logOutHelper(requestData, req).then((response) => {
+
+            if (response.success) {
+                res.json({
+                    isSuccess: true,
+                    response: response.data,
+                    error: false
+                })
+            } else {
+                res.json({
+                    isSuccess: false,
+                    response: {},
+                    error: response.data
+                })
+            }
+        })
+    }
+}),
+
 }

@@ -871,6 +871,50 @@ cancelOrderHelper: async (requestData) => {
         resolve(response)
     }
 });
+},
+logOutHelper : (requestData,req)=>{
+     
+    return new Promise(async (resolve, reject)=>{
+        try {
+            const user = await userDB.findById(requestData.userId);
+             
+            if (!user) {
+                
+                const response = {
+                    success: false,
+                    data: "User not found",
+                };
+                resolve(response);
+                return;
+            }
+             req.session.destroy((err) => {
+               
+                    if (err) {
+                
+                        const response = {
+                            success: false,
+                            data:"logout failed",
+                        };
+                        resolve(response);
+                    } else {
+                        
+                        const response = {
+                            success: true,
+                            data: "successfully logout!",
+                        };
+                        resolve(response);
+                    }
+                  });
+           
+         
+         
+        } catch (error) {
+            
+            console.log(error);
+            
+        } 
+
+    })
 }
 
 }

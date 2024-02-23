@@ -20,7 +20,7 @@ router.post("/createChef", verifyToken.verifyToken("manager"), upload.fields([])
 router.get("/viewChef", verifyToken.verifyToken("manager"), managerController.viewChef)
 router.patch("/chefEdit", verifyToken.verifyToken("manager"), managerController.chefEdit)
 router.delete("/deleteChef/:email", verifyToken.verifyToken("manager"), managerController.chefSoftDelete)
- router.post("/createsupplier", upload.fields([]), managerController.createSupplier)
+ router.post("/createsupplier",verifyToken.verifyToken("manager"), upload.fields([]), managerController.createSupplier)
 router.get("/viewSupplier", verifyToken.verifyToken("manager"), managerController.viewSupplier)
 router.patch("/supplierEdit", verifyToken.verifyToken("manager"),upload.fields([]), managerController.supplierEdit)
 router.delete("/deleteSupplier/:email", verifyToken.verifyToken("manager"), managerController.supplierSoftDelete)
@@ -32,7 +32,6 @@ router.post("/addPrice", verifyToken.verifyToken("manager"), managerController.a
 router.get("/viewTable",verifyToken.verifyToken("manager"),managerController.viewTable)
 router.get("/orderList",verifyToken.verifyToken("manager"),managerController.orderList)
 router.get("/payments",verifyToken.verifyToken("manager"),managerController.payments)
-router.post("/verifyOTPAndStoreUser",managerController.verifyOTPAndStoreUser)
 
 module.exports = router
 
