@@ -1,10 +1,4 @@
-const dotenv = require("dotenv");
-dotenv.config({ path: "config.env" });
 const jwt = require("jsonwebtoken");
-const Manager = require("../models/managerModels/managerSchema");
-const Chef = require("../models/userModels/chefSchema");
-const Cashier = require("../models/userModels/cashierSchema");
-const Supplier = require("../models/userModels/supplierSchema");
 
 module.exports = {
     verifyToken: (role) => {
@@ -12,22 +6,23 @@ module.exports = {
             const clientToken = req.headers['authorization'];
 
             if (!clientToken) {
-               const response = {
+                return res.status(401).json({
                     isSuccess: false,
                     response: {},
                     error: "No token provided"
-                };
-                resolve(response)
+                });
             }
+
+            // Check if the token stored in session matches the token from the client
             const sessionToken = req.session.token;
-            if (!req.session || !req.session.token || req.session.token !== clientToken) {
-                const response = {
+            if (!sessionToken || sessionToken !== clientToken) {
+                return res.status(401).json({
                     isSuccess: false,
                     response: {},
                     error: "Invalid token"
-                };
-                resolve(response)
-                    }
+                });
+            }
+
             try {
                 let secretKey;
                 switch (role) {
@@ -54,18 +49,17 @@ module.exports = {
                 const decoded = jwt.verify(clientToken, secretKey);
 
                 req.userId = decoded.userId;
-                req.userType = decoded.userType
-                
+                req.userType = decoded.userType;
 
-                next();
+                next(); // Call next to pass control to the next middleware/route handler
             } catch (err) {
-                const response = {
+                console.error('Error in token verification:', err);
+                return res.status(401).json({
                     isSuccess: false,
                     response: {},
-                    error: "error in verification"
-                };
-                resolve(response)
+                    error: "Error in token verification"
+                });
             }
-        }
+        };
     }
-}
+};
