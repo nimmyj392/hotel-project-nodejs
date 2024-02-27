@@ -70,14 +70,13 @@ async function editMyDishValidator(requestData) {
 }
 
 function addTodaysMenuValidator(requestData) {
-console.log("requestData",requestData)
     try {
         console.log("stated validation")
         const schema = Joi.object().keys({
-            foodId: Joi.string().length(24).hex().required(),
+            foodId: Joi.string().required(),
             category: Joi.string().required(),
             stock: Joi.number().required(),
-            preparedBy: Joi.string().length(24).hex()
+            preparedBy: Joi.string()
         })
 
         const { error, value } = schema.validate(requestData);
