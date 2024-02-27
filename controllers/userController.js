@@ -230,7 +230,7 @@ module.exports = {
         console.log("req",req.body)
         const requestData = {
             foodId: req.body.foodId,
-            category: req.body.category,
+            category :req.body.category,
             stock: req.body.stock,
             preparedBy: req.userId
         }

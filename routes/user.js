@@ -16,7 +16,7 @@ router.get("/getMyDishes", verifyToken.verifyToken("chef"),userController.getMyD
 router.post("/editMyDishes", verifyToken.verifyToken("chef"),userController.editMyDish)
 router.delete("/deleteFoodByChef", verifyToken.verifyToken("chef"),userController.deleteFoodByChef)
 router.get("/dailyDish", verifyToken.verifyToken("chef"),userController.dailyDish)
-router.post("/addToday'sMenu",verifyToken.verifyToken("chef"),userController.addTodaysMenu)
+router.post("/addToday'sMenu",userController.addTodaysMenu)
 router.delete("/deleteMenuItem",verifyToken.verifyToken("chef"),userController.deleteMenuItem)
 // router.post('/uploadEmployeeProfilePhoto', userJwt.verifyToken, upload.single('profilePhoto'), profileController.uploadUserProfilePhoto)
 router.post("/addTable",verifyToken.verifyToken("supplier"),upload.fields([]),userController.addTable)
