@@ -15,15 +15,15 @@ const { checkPreferences } = require("joi")
 
 module.exports = {
     createManagerHelper: async (requestData) => {
-        try {
+        return new Promise(async (resolve, reject) => {
             const existingUser = await managerDB.findOne({ email: requestData.email, deleted: false });
-    
+
             if (existingUser !== null) {
                 const response = {
                     success: false,
                     data: "This email-Id is taken, try another one",
                 };
-                resolve(response) ;
+                resolve(response);
             } else {
                 const hashedPassword = await bcrypt.hash(requestData.password, 10);
                 let insertData = {
@@ -36,7 +36,7 @@ module.exports = {
                     experience: requestData.experience,
                     deleted: requestData.deleted
                 };
-    
+
                 const dbResponse = await managerDB.insertMany(insertData);
                 if (dbResponse) {
                     const response = {
@@ -52,145 +52,125 @@ module.exports = {
                     resolve(response)
                 }
             }
-        } catch (error) {
-            console.error(error);
-            const response = {
-                success: false,
-                data: error.message || "An error occurred while creating chef",
-            };
-            reject(response)
-        }
+
+        })
     },
-    
+
 
 
     loginHelper: (requestData) => {
+        return new Promise(async (resolve, reject) => {
+            let user;
+
+            switch (requestData.userType) {
+                case 'manager':
+                    user = await managerDB.findOne({ email: requestData.email, deleted: false });
+                    break;
+                case 'chef':
+                    user = await chefDB.findOne({ email: requestData.email, deleted: false });
+                    break;
+                case 'cashier':
+                    user = await cashierDB.findOne({ email: requestData.email, deleted: false });
+                    break;
+                case 'supplier':
+                    user = await supplierDB.findOne({ email: requestData.email, deleted: false });
+                    break;
+                default:
+                    console.log('Invalid usertype');
+            }
+
+            if (!user) {
+                const response = {
+                    success: false,
+                    data: "User not found",
+                };
+                reject(response);
+
+            }
+
+            const passwordMatch = await bcrypt.compare(requestData.password, user.password);
+
+            if (passwordMatch) {
+                const token = generateToken(user, requestData.userType);
+                user.tokens.push(token);
+                await user.save();
+
+                const response = {
+                    success: true,
+                    data: user
+                };
+                resolve(response);
+
+            } else {
+                const response = {
+                    success: false,
+                    data: "Incorrect Password",
+                };
+                reject(response);
+
+            }
+        });
+    },
+
+    managerEditHelper: (requestData) => {
 
         return new Promise(async (resolve, reject) => {
-            try {
-                let user;
 
-                switch (requestData.userType) {
-                    case 'manager':
-                        user = await managerDB.findOne({ email: requestData.email, deleted: false });
-                        break;
-                    case 'chef':
-                        user = await chefDB.findOne({ email: requestData.email, deleted: false });
-                        break;
-                    case 'cashier':
-                        user = await cashierDB.findOne({ email: requestData.email, deleted: false });
-                        break;
-                    case 'supplier':
-                        user = await supplierDB.findOne({ email: requestData.email, deleted: false });
-                        break;
-                    default:
-                        console.log('Invalid usertype');
-                }
+            const User = await managerDB.findOne({ email: requestData.email });
 
-                if (!user) {
-                    const response = {
-                        success: false,
-                        data: "User not found",
-                    };
-                    reject(response);
-                    return;
-                }
+            if (!User) {
 
-                const passwordMatch = await bcrypt.compare(requestData.password, user.password);
+                const response = {
+                    success: false,
+                    data: "User not found",
+                };
+                reject(response);
+                return;
+            }
 
-                if (passwordMatch) {
-                    const token = generateToken(user, requestData.userType);
-                    user.tokens.push(token);
-                    await user.save();
+            const newData = {
+                email: requestData.email,
+                phoneNumber: requestData.phoneNumber,
+                experience: requestData.experience,
+                name: requestData.name,
+                password: requestData.password,
+            };
+
+
+            await managerDB.findOneAndUpdate({ email: User.email }, { $set: newData }, { new: true }).then((res) => {
+                if (res) {
 
                     const response = {
                         success: true,
-                        data: user
+                        data: res,
                     };
                     resolve(response);
                     return;
                 } else {
-                    const response = {
-                        success: false,
-                        data: "Incorrect Password",
-                    };
-                    resolve(response);
-                    return;
-                }
-            } catch (error) {
-                const response = {
-                    success: false,
-                    data: error,
-                };
-
-                reject(response);
-            }
-        });
-
-    },
-    managerEditHelper: (requestData) => {
-
-        return new Promise(async (resolve, reject) => {
-            try {
-                const User = await managerDB.findOne({ email: requestData.email });
-
-                if (!User) {
 
                     const response = {
                         success: false,
-                        data: "User not found",
+                        data: "not updated",
                     };
-                    resolve(response);
+                    reject(response);
                     return;
                 }
-
-                const newData = {
-                    email: requestData.email,
-                    phoneNumber: requestData.phoneNumber,
-                    experience: requestData.experience,
-                    name: requestData.name,
-                    password: requestData.password,
-                };
+            })
 
 
-                await managerDB.findOneAndUpdate({ email: User.email }, { $set: newData }, { new: true }).then((res) => {
-                    if (res) {
-
-                        const response = {
-                            success: true,
-                            data: res,
-                        };
-                        resolve(response);
-                        return;
-                    } else {
-
-                        const response = {
-                            success: false,
-                            data: "not updated",
-                        };
-                        resolve(response);
-                        return;
-                    }
-                })
-
-            } catch (error) {
-
-                console.log(error);
-
-            }
 
         })
     },
     createChefHelper: async (requestData) => {
-        try {
+        return new Promise(async (resolve, reject) => {
             const existingUser = await chefDB.findOne({ email: requestData.email, deleted: false });
-    
+
             if (existingUser !== null) {
                 const response = {
                     success: false,
                     data: "This email-Id is taken, try another one",
                 };
-                resolve(response) ;
+                reject(response);
             } else {
                 const hashedPassword = await bcrypt.hash(requestData.password, 10);
                 let insertData = {
@@ -203,7 +183,7 @@ module.exports = {
                     experience: requestData.experience,
                     deleted: requestData.deleted
                 };
-    
+
                 const dbResponse = await chefDB.insertMany(insertData);
                 if (dbResponse) {
                     const response = {
@@ -216,27 +196,21 @@ module.exports = {
                         success: false,
                         data: dbResponse,
                     };
-                    resolve(response)
+                    reject(response)
                 }
             }
-        } catch (error) {
-            console.error(error);
-            const response = {
-                success: false,
-                data: error.message || "An error occurred while creating chef",
-            };
-            reject(response)
-        }
+
+        })
     },
-    
+
 
 
     viewChefHelper: async (requestData) => {
-        
+
         return new Promise(async (resolve, reject) => {
-        try {
+
             const chefs = await chefDB.aggregate([
-                { $match: { deleted: requestData.deleted } }, 
+                { $match: { deleted: requestData.deleted } },
                 {
                     $lookup: {
                         from: "dishes",
@@ -251,150 +225,139 @@ module.exports = {
                             $filter: {
                                 input: "$dishes",
                                 as: "dish",
-                                cond: { $eq: ["$$dish.deleted", false] } 
+                                cond: { $eq: ["$$dish.deleted", false] }
                             }
                         }
                     }
                 }
             ]);
-    
-            const response = {
-                success: true,
-                data: { chefs },
-                error:false
-            };
-           resolve(response)
-            return 
-        } catch (error) {
-            console.error("Error:", error);
-            const response = {
-                success: false,
-                data: error,
-                errore:true
-            };
-           reject(response)
-            return ;
-        }
-    })
-},
+            if (chefs) {
+                const response = {
+                    success: true,
+                    data: { chefs },
+                    error: false
+                };
+                resolve(response)
+                return
+            }
+            else {
+                console.error("Error:", error);
+                const response = {
+                    success: false,
+                    data: error,
+                    errore: true
+                };
+                resolve(response)
+            }
+        })
+    },
 
     chefEditHelper: (requestData) => {
 
         return new Promise(async (resolve, reject) => {
-            try {
-                const User = await chefDB.findOne({ email: requestData.email });
 
-                if (!User) {
+            const User = await chefDB.findOne({ email: requestData.email });
+
+            if (!User) {
+
+                const response = {
+                    success: false,
+                    data: "User not found",
+                };
+                reject(response);
+                return;
+            }
+
+            const newData = {
+                email: requestData.email,
+                phoneNumber: requestData.phoneNumber,
+                experience: requestData.experience,
+                name: requestData.name,
+                password: requestData.password,
+            };
+
+
+            await chefDB.findOneAndUpdate({ email: User.email }, { $set: newData }, { new: true }).then((res) => {
+                if (res) {
 
                     const response = {
-                        success: false,
-                        data: "User not found",
+                        success: true,
+                        data: res,
                     };
                     resolve(response);
                     return;
+                } else {
+
+                    const response = {
+                        success: false,
+                        data: "not updated",
+                    };
+                    reject(response);
+                    return;
                 }
-
-                const newData = {
-                    email: requestData.email,
-                    phoneNumber: requestData.phoneNumber,
-                    experience: requestData.experience,
-                    name: requestData.name,
-                    password: requestData.password,
-                };
+            })
 
 
-                await chefDB.findOneAndUpdate({ email: User.email }, { $set: newData }, { new: true }).then((res) => {
-                    if (res) {
-
-                        const response = {
-                            success: true,
-                            data: res,
-                        };
-                        resolve(response);
-                        return;
-                    } else {
-
-                        const response = {
-                            success: false,
-                            data: "not updated",
-                        };
-                        resolve(response);
-                        return;
-                    }
-                })
-
-            } catch (error) {
-
-                console.log(error);
-
-            }
 
         })
     },
     createSupplierHelper: async (requestData) => {
-        try {
-            const existingUser = await supplierDB.findOne({ email: requestData.email, deleted: false });
-    
-            if (existingUser !== null) {
-                const response = {
-                    success: false,
-                    data: "This email-Id is taken, try another one",
-                };
-                resolve(response) ;
-            } else {
-                const hashedPassword = await bcrypt.hash(requestData.password, 10);
-                let insertData = {
-                    name: requestData.name,
-                    password: hashedPassword,
-                    email: requestData.email,
-                    gender: requestData.gender,
-                    phoneNumber: requestData.phoneNumber,
-                    userType: requestData.userType,
-                    experience: requestData.experience,
-                    deleted: requestData.deleted
-                };
-    
-                const dbResponse = await supplierDB.insertMany(insertData);
-                if (dbResponse) {
-                    const response = {
-                        success: true,
-                        data: dbResponse,
-                    };
-                    resolve(response)
-                } else {
-                    const response = {
-                        success: false,
-                        data: dbResponse,
-                    };
-                    resolve(response)
-                }
-            }
-        } catch (error) {
-            console.error(error);
+
+        const existingUser = await supplierDB.findOne({ email: requestData.email, deleted: false });
+
+        if (existingUser !== null) {
             const response = {
                 success: false,
-                data: error.message || "An error occurred while creating chef",
+                data: "This email-Id is taken, try another one",
             };
-            reject(response)
+            reject(response);
+        } else {
+            const hashedPassword = await bcrypt.hash(requestData.password, 10);
+            let insertData = {
+                name: requestData.name,
+                password: hashedPassword,
+                email: requestData.email,
+                gender: requestData.gender,
+                phoneNumber: requestData.phoneNumber,
+                userType: requestData.userType,
+                experience: requestData.experience,
+                deleted: requestData.deleted
+            };
+
+            const dbResponse = await supplierDB.insertMany(insertData);
+            if (dbResponse) {
+                const response = {
+                    success: true,
+                    data: dbResponse,
+                };
+                resolve(response)
+            } else {
+                const response = {
+                    success: false,
+                    data: dbResponse,
+                };
+                reject(response)
+            }
         }
+
     },
-    
+
     viewSupplierHelper: (requestData) => {
 
         return new Promise(async (resolve, reject) => {
-            try {
 
-                const chefs = await supplierDB.find({ deleted: requestData.deleted });
-                if (chefs) {
-                    const response = {
-                        success: true,
-                        data: chefs,
-                    }
 
-                    resolve(response)
-                    return;
+            const chefs = await supplierDB.find({ deleted: requestData.deleted });
+            if (chefs) {
+                const response = {
+                    success: true,
+                    data: chefs,
                 }
-            } catch (error) {
+
+                resolve(response)
+                return;
+            }
+            else {
                 console.log("error", error);
                 const response = {
                     success: false,
@@ -410,211 +373,195 @@ module.exports = {
     supplierEditHelper: (requestData) => {
 
         return new Promise(async (resolve, reject) => {
-            try {
-                const User = await supplierDB.findOne({ email: requestData.email });
 
-                if (!User) {
+            const User = await supplierDB.findOne({ email: requestData.email });
+
+            if (!User) {
+
+                const response = {
+                    success: false,
+                    data: "User not found",
+                };
+                reject(response);
+                return;
+            }
+
+            const newData = {
+                email: requestData.email,
+                phoneNumber: requestData.phoneNumber,
+                experience: requestData.experience,
+                name: requestData.name,
+                password: requestData.password,
+            };
+
+
+            await supplierDB.findOneAndUpdate({ email: User.email }, { $set: newData }, { new: true }).then((res) => {
+                if (res) {
+
+                    const response = {
+                        success: true,
+                        data: res,
+                    };
+                    resolve(response);
+
+                } else {
 
                     const response = {
                         success: false,
-                        data: "User not found",
+                        data: "not updated",
                     };
-                    resolve(response);
-                    return;
+                    reject(response);
+
                 }
-
-                const newData = {
-                    email: requestData.email,
-                    phoneNumber: requestData.phoneNumber,
-                    experience: requestData.experience,
-                    name: requestData.name,
-                    password: requestData.password,
-                };
+            })
 
 
-                await supplierDB.findOneAndUpdate({ email: User.email }, { $set: newData }, { new: true }).then((res) => {
-                    if (res) {
-
-                        const response = {
-                            success: true,
-                            data: res,
-                        };
-                        resolve(response);
-                        return;
-                    } else {
-
-                        const response = {
-                            success: false,
-                            data: "not updated",
-                        };
-                        resolve(response);
-                        return;
-                    }
-                })
-
-            } catch (error) {
-
-                console.log(error);
-
-            }
 
         })
     },
     createCashierHelper: async (requestData) => {
-        try {
-            const existingUser = await cashierDB.findOne({ email: requestData.email, deleted: false });
-    
-            if (existingUser !== null) {
-                const response = {
-                    success: false,
-                    data: "This email-Id is taken, try another one",
-                };
-                resolve(response) ;
-            } else {
-                const hashedPassword = await bcrypt.hash(requestData.password, 10);
-                let insertData = {
-                    name: requestData.name,
-                    password: hashedPassword,
-                    email: requestData.email,
-                    gender: requestData.gender,
-                    phoneNumber: requestData.phoneNumber,
-                    userType: requestData.userType,
-                    experience: requestData.experience,
-                    deleted: requestData.deleted
-                };
-    
-                const dbResponse = await cashierDB.insertMany(insertData);
-                if (dbResponse) {
-                    const response = {
-                        success: true,
-                        data: dbResponse,
-                    };
-                    resolve(response)
-                } else {
-                    const response = {
-                        success: false,
-                        data: dbResponse,
-                    };
-                    resolve(response)
-                }
-            }
-        } catch (error) {
-            console.error(error);
+
+        const existingUser = await cashierDB.findOne({ email: requestData.email, deleted: false });
+
+        if (existingUser !== null) {
             const response = {
                 success: false,
-                data: error.message || "An error occurred while creating chef",
+                data: "This email-Id is taken, try another one",
             };
-            reject(response)
+            reject(response);
+        } else {
+            const hashedPassword = await bcrypt.hash(requestData.password, 10);
+            let insertData = {
+                name: requestData.name,
+                password: hashedPassword,
+                email: requestData.email,
+                gender: requestData.gender,
+                phoneNumber: requestData.phoneNumber,
+                userType: requestData.userType,
+                experience: requestData.experience,
+                deleted: requestData.deleted
+            };
+
+            const dbResponse = await cashierDB.insertMany(insertData);
+            if (dbResponse) {
+                const response = {
+                    success: true,
+                    data: dbResponse,
+                };
+                resolve(response)
+            } else {
+                const response = {
+                    success: false,
+                    data: dbResponse,
+                };
+                reject(response)
+            }
         }
+
+
+
     },
-    
+
 
     viewCashierHelper: (requestData) => {
 
         return new Promise(async (resolve, reject) => {
-            try {
 
-                const chefs = await cashierDB.find({ deleted: requestData.deleted });
-                if (chefs) {
-                    const response = {
-                        success: true,
-                        data: chefs,
-                    }
-
-                    resolve(response)
-                    return;
+            const chefs = await cashierDB.find({ deleted: requestData.deleted });
+            if (chefs) {
+                const response = {
+                    success: true,
+                    data: chefs,
                 }
-            } catch (error) {
+
+                resolve(response)
+                return;
+            }
+            else {
                 console.log("error", error);
                 const response = {
                     success: false,
                     data: error
                 };
                 resolve(response);
-
             }
+
         });
 
     },
     cashierEditHelper: (requestData) => {
 
         return new Promise(async (resolve, reject) => {
-            try {
-                const User = await cashierDB.findOne({ email: requestData.email });
 
-                if (!User) {
+            const User = await cashierDB.findOne({ email: requestData.email });
+
+            if (!User) {
+
+                const response = {
+                    success: false,
+                    data: "User not found",
+                };
+                reject(response);
+                return;
+            }
+
+            const newData = {
+                email: requestData.email,
+                phoneNumber: requestData.phoneNumber,
+                experience: requestData.experience,
+                name: requestData.name,
+                password: requestData.password,
+            };
+
+
+            await cashierDB.findOneAndUpdate({ email: User.email }, { $set: newData }, { new: true }).then((res) => {
+                if (res) {
 
                     const response = {
-                        success: false,
-                        data: "User not found",
+                        success: true,
+                        data: res,
                     };
                     resolve(response);
                     return;
+                } else {
+
+                    const response = {
+                        success: false,
+                        data: "not updated",
+                    };
+                    reject(response);
+                    return;
                 }
-
-                const newData = {
-                    email: requestData.email,
-                    phoneNumber: requestData.phoneNumber,
-                    experience: requestData.experience,
-                    name: requestData.name,
-                    password: requestData.password,
-                };
+            })
 
 
-                await cashierDB.findOneAndUpdate({ email: User.email }, { $set: newData }, { new: true }).then((res) => {
-                    if (res) {
-
-                        const response = {
-                            success: true,
-                            data: res,
-                        };
-                        resolve(response);
-                        return;
-                    } else {
-
-                        const response = {
-                            success: false,
-                            data: "not updated",
-                        };
-                        resolve(response);
-                        return;
-                    }
-                })
-
-            } catch (error) {
-
-                console.log(error);
-
-            }
 
         })
     },
     cashierSoftDeleteHelper: async (requestData) => {
         return new Promise(async (resolve, reject) => {
 
-            try {
-                const result = await cashierDB.findOneAndUpdate({ email: requestData.email }, { deleted: true }, { new: true }
-                );
 
-                if (!result) {
-                    const response = {
-                        success: false,
-                        data: "document not found"
-                    }
-                    resolve(response)
-                    return;
-                } else {
+            const result = await cashierDB.findOneAndUpdate({ email: requestData.email }, { deleted: true }, { new: true }
+            );
 
-                    const response = {
-                        success: true,
-                        data: result
-                    }
-                    resolve(response)
-
+            if (!result) {
+                const response = {
+                    success: false,
+                    data: "document not found"
                 }
-            } catch (error) {
-                console.error('Error soft deleting document:', error);
+                resolve(response)
+                return;
+            } else {
+
+                const response = {
+                    success: true,
+                    data: result
+                }
+                reject(response)
+
             }
+
         })
 
 
@@ -623,29 +570,26 @@ module.exports = {
     managerSoftDeleteHelper: async (requestData) => {
         return new Promise(async (resolve, reject) => {
 
-            try {
-                const result = await managerDB.findOneAndUpdate({ email: requestData.email }, { deleted: true }, { new: true }
-                );
+            const result = await managerDB.findOneAndUpdate({ email: requestData.email }, { deleted: true }, { new: true }
+            );
 
-                if (!result) {
-                    const response = {
-                        success: false,
-                        data: "document not found"
-                    }
-                    resolve(response)
-                    return;
-                } else {
-
-                    const response = {
-                        success: true,
-                        data: result
-                    }
-                    resolve(response)
-
+            if (!result) {
+                const response = {
+                    success: false,
+                    data: "document not found"
                 }
-            } catch (error) {
-                console.error('Error soft deleting document:', error);
+                resolve(response)
+                return;
+            } else {
+
+                const response = {
+                    success: true,
+                    data: result
+                }
+                reject(response)
+
             }
+
         })
 
 
@@ -654,29 +598,26 @@ module.exports = {
     chefSoftDeleteHelper: async (requestData) => {
         return new Promise(async (resolve, reject) => {
 
-            try {
-                const result = await chefDB.findOneAndUpdate({ email: requestData.email }, { deleted: true }, { new: true }
-                );
+            const result = await chefDB.findOneAndUpdate({ email: requestData.email }, { deleted: true }, { new: true }
+            );
 
-                if (!result) {
-                    const response = {
-                        success: false,
-                        data: "document not found"
-                    }
-                    resolve(response)
-
-                } else {
-
-                    const response = {
-                        success: true,
-                        data: result
-                    }
-                    resolve(response)
-
+            if (!result) {
+                const response = {
+                    success: false,
+                    data: "document not found"
                 }
-            } catch (error) {
-                console.error('Error soft deleting document:', error);
+                reject(response)
+
+            } else {
+
+                const response = {
+                    success: true,
+                    data: result
+                }
+                resolve(response)
+
             }
+
         })
 
 
@@ -686,40 +627,38 @@ module.exports = {
     supplierSoftDeleteHelper: async (requestData) => {
         return new Promise(async (resolve, reject) => {
 
-            try {
-                const result = await supplierDB.findOneAndUpdate({ email: requestData.email }, { deleted: true }, { new: true }
-                );
 
-                if (!result) {
-                    const response = {
-                        success: false,
-                        data: "document not found"
-                    }
-                    resolve(response)
+            const result = await supplierDB.findOneAndUpdate({ email: requestData.email }, { deleted: true }, { new: true }
+            );
 
-                } else {
-
-                    const response = {
-                        success: true,
-                        data: result
-                    }
-                    resolve(response)
-
+            if (!result) {
+                const response = {
+                    success: false,
+                    data: "document not found"
                 }
-            } catch (error) {
-                console.error('Error soft deleting document:', error);
+                reject(response)
+
+            } else {
+
+                const response = {
+                    success: true,
+                    data: result
+                }
+                resolve(response)
+
             }
+
         })
 
 
 
     },
-    addPriceHelper : async (requestData) => {
+    addPriceHelper: async (requestData) => {
         return new Promise(async (resolve, reject) => {
-        try {
-         
+
+
             const dish = await dishDB.findOne({ _id: requestData.dishId, deleted: false });
-    
+
             if (!dish) {
                 const response = {
                     success: false,
@@ -729,11 +668,11 @@ module.exports = {
                 resolve(response)
                 return;
             }
-    
-            
+
+
             dish.price = requestData.price;
             await dish.save();
-    
+
             const response = {
                 success: true,
                 data: dish,
@@ -741,24 +680,15 @@ module.exports = {
             }
             resolve(response)
             return;
-        } catch (error) {
-            console.error("Error in addPriceHelper:", error);
-            const response = {
-                success: false,
-                data: error,
-                error: true
-            }
-            reject(response)
-            return;
-        }
-    })
+
+        })
 
 
-},
-viewTableHelper: (requestData) => {
+    },
+    viewTableHelper: (requestData) => {
 
-    return new Promise(async (resolve, reject) => {
-        try {
+        return new Promise(async (resolve, reject) => {
+
 
             const tables = await tableDB.find({ deleted: requestData.deleted });
             if (tables) {
@@ -770,24 +700,24 @@ viewTableHelper: (requestData) => {
                 resolve(response)
                 return;
             }
-        } catch (error) {
-            console.log("error", error);
-            const response = {
-                success: false,
-                data: error
-            };
-            resolve(response);
 
-        }
-    });
+            else {
+                const response = {
+                    success: false,
+                    data: error
+                };
+                resolve(response);
+            }
 
-},
- 
-orderListHelper: (requestData) => {
-    return new Promise(async (resolve, reject) => {
-        try {
+        });
+
+    },
+
+    orderListHelper: (requestData) => {
+        return new Promise(async (resolve, reject) => {
+
             const orderList = await orderDB.find({ deleted: requestData.deleted });
-            
+
             if (orderList.length === 0) {
                 const response = {
                     success: false,
@@ -796,28 +726,22 @@ orderListHelper: (requestData) => {
                 resolve(response);
                 return;
             }
+            else {
+                const response = {
+                    success: true,
+                    data: orderList
+                };
+                resolve(response);
+                return;
 
-            const response = {
-                success: true,
-                data: orderList
-            };
-            resolve(response);
-            return;
-        } catch (error) {
-            console.log("Error:", error);
-            const response = {
-                success: false,
-                data: "An error occurred while fetching orders."
-            };
-            resolve(response);
-        }
-    });
-},
-paymentHelper: (requestData) => {
-    return new Promise(async (resolve, reject) => {
-        try {
+            }
+        });
+    },
+    paymentHelper: (requestData) => {
+        return new Promise(async (resolve, reject) => {
+
             const payments = await paymentDB.find({ deleted: requestData.deleted });
-            
+
             if (orderList.length === 0) {
                 const response = {
                     success: false,
@@ -826,21 +750,15 @@ paymentHelper: (requestData) => {
                 resolve(response);
                 return;
             }
+            else {
+                const response = {
+                    success: true,
+                    data: payments
+                };
+                resolve(response);
+                return;
 
-            const response = {
-                success: true,
-                data:  payments
-            };
-            resolve(response);
-            return;
-        } catch (error) {
-            console.log("Error:", error);
-            const response = {
-                success: false,
-                data: "An error occurred while fetching orders."
-            };
-            resolve(response);
-        }
-    });
-},
+            }
+        });
+    },
 }

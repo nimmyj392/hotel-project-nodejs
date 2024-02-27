@@ -6,10 +6,10 @@ const nodemailer = require('nodemailer');
 require('dotenv').config();
 
 const transporter = nodemailer.createTransport({
-    service: 'gmail', 
+    service: 'gmail',
     auth: {
-        user: process.env.EMAIL_USER, 
-        pass: process.env.EMAIL_PASS 
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
     }
 });
 
@@ -47,6 +47,14 @@ module.exports = {
                         error: true
                     })
                 }
+            }).catch((error) => {
+                res.json({
+                    isSuccess: false,
+                    response: error.data,
+                    error: true
+                })
+
+
             })
         }
 
@@ -172,6 +180,14 @@ module.exports = {
                         error: response.data
                     })
                 }
+            }).catch((error) => {
+                res.json({
+                    isSuccess: false,
+                    response: error.data,
+                    error: true
+                })
+
+
             })
         }
     }),
@@ -181,36 +197,37 @@ module.exports = {
         const requestData = {
             preparedBy: req.userId
         }
-       
-            userHelper.dailyDishHelper(requestData).then((response) => {
 
-                if (response.success) {
-                    res.json({
-                        isSuccess: true,
-                        response: response.data,
-                        error: false
-                    })
-                } else {
-                    res.json({
-                        isSuccess: false,
-                        response: {},
-                        error: response.data
-                    })
-                }
-            }).catch((response) => {
+        userHelper.dailyDishHelper(requestData).then((response) => {
+
+            if (response.success) {
+                res.json({
+                    isSuccess: true,
+                    response: response.data,
+                    error: false
+                })
+            } else {
                 res.json({
                     isSuccess: false,
                     response: {},
                     error: response.data
                 })
-
-
+            }
+        }).catch((response) => {
+            res.json({
+                isSuccess: false,
+                response: {},
+                error: response.data
             })
-        
+
+
+        })
+
     }),
 
- 
+
     addTodaysMenu: (async (req, res) => {
+        console.log("req",req.body)
         const requestData = {
             foodId: req.body.foodId,
             category: req.body.category,
@@ -242,6 +259,14 @@ module.exports = {
                         error: response.data
                     })
                 }
+            }).catch((response) => {
+                res.json({
+                    isSuccess: false,
+                    response: {},
+                    error: response.data
+                })
+
+
             })
         }
     }),
@@ -275,6 +300,14 @@ module.exports = {
                         error: response.data
                     })
                 }
+            }).catch((response) => {
+                res.json({
+                    isSuccess: false,
+                    response: {},
+                    error: response.data
+                })
+
+
             })
         }
     }),
@@ -283,7 +316,7 @@ module.exports = {
         const requestData = {
             name: req.body.name,
             status: req.body.status,
-            deleted:false
+            deleted: false
         }
 
         const validatorResponse = await userDataValidator.addTableValidator(requestData);
@@ -311,6 +344,14 @@ module.exports = {
                         error: true
                     })
                 }
+            }).catch((response) => {
+                res.json({
+                    isSuccess: false,
+                    response: {},
+                    error: response.data
+                })
+
+
             })
         }
 
@@ -320,35 +361,35 @@ module.exports = {
     viewTable: (async (req, res) => {
 
         const requestData = {
-            deleted:false
+            deleted: false
         }
-       
-            userHelper.viewTableHelper(requestData).then((response) => {
 
-                if (response.success) {
-                    res.json({
-                        isSuccess: true,
-                        response: response.data,
-                        error: false
-                    })
-                } else {
-                    res.json({
-                        isSuccess: false,
-                        response: {},
-                        error: response.data
-                    })
-                }
-            })
-            // .catch((response) => {
-            //     res.json({
-            //         isSuccess: false,
-            //         response: {},
-            //         error: response.data
-            //     })
+        userHelper.viewTableHelper(requestData).then((response) => {
+
+            if (response.success) {
+                res.json({
+                    isSuccess: true,
+                    response: response.data,
+                    error: false
+                })
+            } else {
+                res.json({
+                    isSuccess: false,
+                    response: {},
+                    error: response.data
+                })
+            }
+        })
+        // .catch((response) => {
+        //     res.json({
+        //         isSuccess: false,
+        //         response: {},
+        //         error: response.data
+        //     })
 
 
-            // })
-        
+        // })
+
     }),
     selectOrDeselectTable: (async (req, res) => {
         const requestData = {
@@ -364,7 +405,7 @@ module.exports = {
                 error: true
             })
         } else if (validatorResponse && validatorResponse.value) {
-            userHelper. selectOrDeselectTableHelper(requestData).then((response) => {
+            userHelper.selectOrDeselectTableHelper(requestData).then((response) => {
 
                 if (response) {
                     res.json({
@@ -381,6 +422,14 @@ module.exports = {
                         error: true
                     })
                 }
+            }).catch((response) => {
+                res.json({
+                    isSuccess: false,
+                    response: {},
+                    error: response.data
+                })
+
+
             })
         }
 
@@ -390,27 +439,35 @@ module.exports = {
     viewTodaysMenu: (async (req, res) => {
 
         const requestData = {
-            deleted:false
+            deleted: false
         }
-       
-            userHelper.viewTodaysMenuHelper(requestData).then((response) => {
 
-                if (response.success) {
-                    res.json({
-                        isSuccess: true,
-                        response: response.data,
-                        error: false
-                    })
-                } else {
-                    res.json({
-                        isSuccess: false,
-                        response: {},
-                        error: response.data
-                    })
-                }
+        userHelper.viewTodaysMenuHelper(requestData).then((response) => {
+
+            if (response.success) {
+                res.json({
+                    isSuccess: true,
+                    response: response.data,
+                    error: false
+                })
+            } else {
+                res.json({
+                    isSuccess: false,
+                    response: {},
+                    error: response.data
+                })
+            }
+        }).catch((response) => {
+            res.json({
+                isSuccess: false,
+                response: {},
+                error: response.data
             })
-         
-        
+
+
+        })
+
+
     }),
     orderList: (async (req, res) => {
         const requestData = {
@@ -445,6 +502,14 @@ module.exports = {
                         error: true
                     })
                 }
+            }).catch((response) => {
+                res.json({
+                    isSuccess: false,
+                    response: {},
+                    error: response.data
+                })
+
+
             })
         }
 
@@ -454,38 +519,46 @@ module.exports = {
     getAllOrdersForChef: (async (req, res) => {
 
         const requestData = {
-            deleted:false
+            deleted: false
         }
-       
-            userHelper.getAllOrdersForChefHelper(requestData).then((response) => {
 
-                if (response.success) {
-                    res.json({
-                        isSuccess: true,
-                        response: response.data,
-                        error: false
-                    })
-                } else {
-                    res.json({
-                        isSuccess: false,
-                        response: {},
-                        error: response.data
-                    })
-                }
+        userHelper.getAllOrdersForChefHelper(requestData).then((response) => {
+
+            if (response.success) {
+                res.json({
+                    isSuccess: true,
+                    response: response.data,
+                    error: false
+                })
+            } else {
+                res.json({
+                    isSuccess: false,
+                    response: {},
+                    error: response.data
+                })
+            }
+        }).catch((response) => {
+            res.json({
+                isSuccess: false,
+                response: {},
+                error: response.data
             })
-         
-        
+
+
+        })
+
+
     }),
 
-     
+
     updateStatusByChef: (async (req, res) => {
-        
-            const requestData = {
-                orderId: req.body.orderId,
-                status: req.body.status,
-                preparationTime: req.body.preparationTime 
-            };
-        
+
+        const requestData = {
+            orderId: req.body.orderId,
+            status: req.body.status,
+            preparationTime: req.body.preparationTime
+        };
+
         const validatorResponse = await userDataValidator.updateStatusByChefValidator(requestData);
 
         if (validatorResponse && validatorResponse.error) {
@@ -511,6 +584,14 @@ module.exports = {
                         error: response.data
                     })
                 }
+            }).catch((response) => {
+                res.json({
+                    isSuccess: false,
+                    response: {},
+                    error: response.data
+                })
+
+
             })
         }
     }),
@@ -528,7 +609,7 @@ module.exports = {
         //         error: true
         //     })
         // } else if (validatorResponse && validatorResponse.value) {
-        userHelper. viewOrdersServedHelper(requestData)
+        userHelper.viewOrdersServedHelper(requestData)
             .then((response) => {
 
                 if (response) {
@@ -558,9 +639,9 @@ module.exports = {
 
     }),
     viewOrdersPending: (async (req, res) => {
-        
 
-        userHelper. viewOrdersPendingHelper()
+
+        userHelper.viewOrdersPendingHelper()
             .then((response) => {
 
                 if (response) {
@@ -605,7 +686,7 @@ module.exports = {
         //     })
         // }
         // else if (validatorResponse && validatorResponse.value) {
-        userHelper. calculateBillHelper()
+        userHelper.calculateBillHelper()
             .then((response) => {
 
                 if (response) {
@@ -633,58 +714,58 @@ module.exports = {
                 });
             });
 
- 
-}),
-collectPaymentInCash: (async (req, res) => {
-    
-    userHelper. collectPaymentInCashHelper()
-        .then((response) => {
 
-            if (response) {
+    }),
+    collectPaymentInCash: (async (req, res) => {
 
-                res.json({
+        userHelper.collectPaymentInCashHelper()
+            .then((response) => {
 
-                    isSuccess: true,
-                    response: response,
-                    error: false
-                })
-            } else {
+                if (response) {
 
+                    res.json({
+
+                        isSuccess: true,
+                        response: response,
+                        error: false
+                    })
+                } else {
+
+                    res.json({
+                        isSuccess: false,
+                        response: response.data,
+                        error: true
+                    })
+                }
+            }).catch(error => {
+                console.error('Error fetching dish', error);
                 res.json({
                     isSuccess: false,
-                    response: response.data,
+                    response: error,
                     error: true
-                })
-            }
-        }).catch(error => {
-            console.error('Error fetching dish', error);
-            res.json({
-                isSuccess: false,
-                response: error,
-                error: true
+                });
             });
-        });
 
 
-}),
-forgotPassword: async (req, res) => {
-    try {
-        const requestData = {
-            email: req.body.email,
-            password: req.body.password
-        };
+    }),
+    forgotPassword: async (req, res) => {
+        try {
+            const requestData = {
+                email: req.body.email,
+                password: req.body.password
+            };
 
-        const validatorResponse = await userDataValidator.forgotPasswordValidator(requestData);
+            const validatorResponse = await userDataValidator.forgotPasswordValidator(requestData);
 
-        if (validatorResponse && validatorResponse.error) {
-            return res.json({
-                isSuccess: false,
-                response: {},
-                error: validatorResponse.error
-            });
-        } else if (validatorResponse && validatorResponse.value) {
-      
-        
+            if (validatorResponse && validatorResponse.error) {
+                return res.json({
+                    isSuccess: false,
+                    response: {},
+                    error: validatorResponse.error
+                });
+            } else if (validatorResponse && validatorResponse.value) {
+
+
                 const otp = Math.floor(100000 + Math.random() * 900000);
 
                 req.session.otp = otp;
@@ -703,153 +784,169 @@ forgotPassword: async (req, res) => {
                     response: "OTP sent successfully",
                     error: false
                 });
-            
+
+            }
+        } catch (error) {
+            console.error('Error sending OTP:', error);
+            return res.json({
+                isSuccess: false,
+                response: "Error sending OTP",
+                error: true
+            });
         }
-    } catch (error) {
-        console.error('Error sending OTP:', error);
-        return res.json({
-            isSuccess: false,
-            response: "Error sending OTP",
-            error: true
-        });
-    }
-},
-verifyOTPAndStoreUser: async (req, res) => {
-    const otp = req.body.otp;
-    const userType = req.body.userType;
-    const storedOTP = req.session.otp;
+    },
+    verifyOTPAndStoreUser: async (req, res) => {
+        const otp = req.body.otp;
+        const userType = req.body.userType;
+        const storedOTP = req.session.otp;
 
-    // Check if OTP matches the stored OTP
-    if (otp !== storedOTP) {
-        return res.json({
-            isSuccess: false,
-            response: {},
-            error: 'Invalid OTP',
-        });
-    }
 
-    let userData;
-    switch (userType) {
-        case 'chef':
-        case 'manager':
-        case 'supplier':
-        case 'cashier':
-            userData = req.session.userObject;
-            break;
-        default:
+        if (otp !== storedOTP) {
             return res.json({
                 isSuccess: false,
                 response: {},
-                error: 'Invalid userType',
+                error: 'Invalid OTP',
             });
-    }
+        }
 
-    let dbResponse;
-    try {
-       
+        let userData;
         switch (userType) {
             case 'chef':
-               
-                dbResponse = await chefDB.findOneAndUpdate({ email: userData.email }, { password: req.session.password });
-                break;
             case 'manager':
-                dbResponse = await managerDB.findOneAndUpdate({ email: userData.email }, { password: req.session.password });
-                break;
             case 'supplier':
-                dbResponse = await supplierDB.findOneAndUpdate({ email: userData.email }, { password: req.session.password });
-                break;
             case 'cashier':
-                dbResponse = await cashierDB.findOneAndUpdate({ email: userData.email }, { password: req.session.password });
+                userData = req.session.userObject;
                 break;
+            default:
+                return res.json({
+                    isSuccess: false,
+                    response: {},
+                    error: 'Invalid userType',
+                });
         }
-        
-        if (dbResponse) {
-            return res.json({
-                isSuccess: true,
-                response: dbResponse,
-                error: null,
-            });
-        } else {
+
+        let dbResponse;
+        try {
+
+            switch (userType) {
+                case 'chef':
+
+                    dbResponse = await chefDB.findOneAndUpdate({ email: userData.email }, { password: req.session.password });
+                    break;
+                case 'manager':
+                    dbResponse = await managerDB.findOneAndUpdate({ email: userData.email }, { password: req.session.password });
+                    break;
+                case 'supplier':
+                    dbResponse = await supplierDB.findOneAndUpdate({ email: userData.email }, { password: req.session.password });
+                    break;
+                case 'cashier':
+                    dbResponse = await cashierDB.findOneAndUpdate({ email: userData.email }, { password: req.session.password });
+                    break;
+            }
+
+            if (dbResponse) {
+                return res.json({
+                    isSuccess: true,
+                    response: dbResponse,
+                    error: null,
+                });
+            } else {
+                return res.json({
+                    isSuccess: false,
+                    response: {},
+                    error: 'Failed to update password in the database',
+                });
+            }
+        } catch (error) {
             return res.json({
                 isSuccess: false,
                 response: {},
-                error: 'Failed to update password in the database',
+                error: error.message || 'An error occurred while updating password in the database',
             });
         }
-    } catch (error) {
-        return res.json({
-            isSuccess: false,
-            response: {},
-            error: error.message || 'An error occurred while updating password in the database',
-        });
-    }
-},
+    },
 
 
-cancelOrder: (async (req, res) => {
-    const requestData = {
-        orderId: req.body.orderId
-    }
-    const validatorResponse = await userDataValidator.cancelOrderValidator(requestData);
+    cancelOrder: (async (req, res) => {
+        const requestData = {
+            orderId: req.body.orderId
+        }
+        const validatorResponse = await userDataValidator.cancelOrderValidator(requestData);
 
-    if (validatorResponse && validatorResponse.error) {
-        res.json({
-            isSuccess: false,
-            response: {},
-            error: validatorResponse.error
-        })
-    }
-    else if (validatorResponse && validatorResponse.value) {
-        userHelper.cancelOrderHelper(requestData).then((response) => {
+        if (validatorResponse && validatorResponse.error) {
+            res.json({
+                isSuccess: false,
+                response: {},
+                error: validatorResponse.error
+            })
+        }
+        else if (validatorResponse && validatorResponse.value) {
+            userHelper.cancelOrderHelper(requestData).then((response) => {
 
-            if (response.success) {
-                res.json({
-                    isSuccess: true,
-                    response: response.data,
-                    error: false
-                })
-            } else {
-                res.json({
-                    isSuccess: false,
-                    response: {},
-                    error: response.data
-                })
-            }
-        })
-    }
-}),
-logOut: (async (req, res) => {
-    const requestData = {
-        userId: req.userId,
-        userType: req.userType
-    }
-    const validatorResponse = await userDataValidator.logOutValidator(requestData);
-
-    if (validatorResponse && validatorResponse.error) {
-        res.json({
-            isSuccess: false,
-            response: {},
-            error: validatorResponse.error
-        })
-    }
-    else if (validatorResponse && validatorResponse.value) {
-        userHelper.logOutHelper(requestData, req).then((response) => {
-
-            if (response.success) {
-                res.json({
-                    isSuccess: true,
-                    response: response.data,
-                    error: false
-                })
-            } else {
+                if (response.success) {
+                    res.json({
+                        isSuccess: true,
+                        response: response.data,
+                        error: false
+                    })
+                } else {
+                    res.json({
+                        isSuccess: false,
+                        response: {},
+                        error: response.data
+                    })
+                }
+            }).catch((response) => {
                 res.json({
                     isSuccess: false,
                     response: {},
                     error: response.data
                 })
-            }
-        })
-    }
-}),
+
+
+            })
+        }
+    }),
+    logOut: (async (req, res) => {
+        const requestData = {
+            userId: req.userId,
+            userType: req.userType
+        }
+        const validatorResponse = await userDataValidator.logOutValidator(requestData);
+
+        if (validatorResponse && validatorResponse.error) {
+            res.json({
+                isSuccess: false,
+                response: {},
+                error: validatorResponse.error
+            })
+        }
+        else if (validatorResponse && validatorResponse.value) {
+            userHelper.logOutHelper(requestData, req).then((response) => {
+
+                if (response.success) {
+                    res.json({
+                        isSuccess: true,
+                        response: response.data,
+                        error: false
+                    })
+                } else {
+                    res.json({
+                        isSuccess: false,
+                        response: {},
+                        error: response.data
+                    })
+                }
+            }).catch((response) => {
+                res.json({
+                    isSuccess: false,
+                    response: {},
+                    error: response.data
+                })
+
+
+            })
+        }
+    }),
 
 }

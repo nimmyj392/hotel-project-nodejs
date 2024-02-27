@@ -257,15 +257,15 @@ function cancelOrderValidator(requestData) {
     }
 }
 module.exports = {
-   addFoodByChefValidator,
-   deleteFoodByChefValidator,
-   editMyDishValidator,
-   addTodaysMenuValidator,
-   addTableValidator,
-   selectOrDeselectTableValidator,
-   orderListValidator,
-   updateStatusByChefValidator,
-//    calculateBillValidator
-forgotPasswordValidator,
-cancelOrderValidator
+    addFoodByChefValidator,
+    deleteFoodByChefValidator,
+    editMyDishValidator,
+    addTodaysMenuValidator,
+    addTableValidator,
+    selectOrDeselectTableValidator,
+    orderListValidator,
+    updateStatusByChefValidator,
+    //    calculateBillValidator
+    forgotPasswordValidator,
+    cancelOrderValidator
 }

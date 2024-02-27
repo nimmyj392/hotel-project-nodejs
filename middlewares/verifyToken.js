@@ -20,19 +20,19 @@ module.exports = {
                 switch (role) {
                     case 'manager':
                         secretKey = process.env.MANAGER_SECRET_KEY;
-                        User = require("../models/managerModels/managerSchema") 
+                        User = require("../models/managerModels/managerSchema")
                         break;
                     case 'chef':
                         secretKey = process.env.CHEF_SECRET_KEY;
-                        User = require("../models/userModels/chefSchema"); 
+                        User = require("../models/userModels/chefSchema");
                         break;
                     case 'cashier':
                         secretKey = process.env.CASHIER_SECRET_KEY;
-                        User = require("../models/userModels/cashierSchema"); 
+                        User = require("../models/userModels/cashierSchema");
                         break;
                     case 'supplier':
                         secretKey = process.env.SUPPLIER_SECRET_KEY;
-                        User = require("../models/userModels/supplierSchema") 
+                        User = require("../models/userModels/supplierSchema")
                         break;
                     default:
                         return res.status(401).json({
@@ -44,7 +44,7 @@ module.exports = {
 
                 const decoded = jwt.verify(clientToken, secretKey);
 
-               
+
                 const user = await User.findOne({ _id: decoded.userId });
 
                 if (!user) {
@@ -68,7 +68,7 @@ module.exports = {
                 req.userId = decoded.userId;
                 req.userType = decoded.userType;
 
-                next(); 
+                next();
             } catch (err) {
                 console.error('Error in token verification:', err);
                 return res.status(401).json({

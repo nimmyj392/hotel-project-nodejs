@@ -61,7 +61,7 @@ module.exports = {
                                     res.json({
                                         isSuccess: true,
                                         response: response.data,
-                                     error: false
+                                        error: false
                                     });
                                 } else {
                                     res.json({
