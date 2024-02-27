@@ -70,8 +70,9 @@ async function editMyDishValidator(requestData) {
 }
 
 function addTodaysMenuValidator(requestData) {
-
+console.log("requestData",requestData)
     try {
+        console.log("stated validation")
         const schema = Joi.object().keys({
             foodId: Joi.string().length(24).hex().required(),
             category: Joi.string().required(),
@@ -80,7 +81,7 @@ function addTodaysMenuValidator(requestData) {
         })
 
         const { error, value } = schema.validate(requestData);
-
+consolel.log("Proxy ERROR",error)
         if (error) {
             return { error: error.details.map((x) => x.message).join(", ") };
         } else if (value) {

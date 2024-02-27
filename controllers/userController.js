@@ -235,7 +235,8 @@ module.exports = {
             preparedBy: req.userId
         }
         const validatorResponse = await userDataValidator.addTodaysMenuValidator(requestData);
-
+        
+        console.log("validator response : ",validatorResponse)
         if (validatorResponse && validatorResponse.error) {
             res.json({
                 isSuccess: false,
