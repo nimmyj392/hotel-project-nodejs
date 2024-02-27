@@ -246,7 +246,7 @@ module.exports = {
         else if (validatorResponse && validatorResponse.value) {
             userHelper.addTodaysMenuHelper(requestData).then((response) => {
 
-                if (response.success) {
+                if (response) {
                     res.json({
                         isSuccess: true,
                         response: response.data,

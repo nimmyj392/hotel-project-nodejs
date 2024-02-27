@@ -87,6 +87,7 @@ module.exports = {
                 reject(response);
 
             }
+            else{ 
 
             const passwordMatch = await bcrypt.compare(requestData.password, user.password);
 
@@ -108,8 +109,9 @@ module.exports = {
                 };
                 reject(response);
 
-            }
-        });
+            }}
+        })
+    
     },
 
     managerEditHelper: (requestData) => {

@@ -21,3 +21,4 @@ async function connectToDatabase() {
 
 connectToDatabase();
 //ssh -i "internProjectBatch1.pem" ubuntu@ec2-3-87-78-37.compute-1.amazonaws.com
+//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
