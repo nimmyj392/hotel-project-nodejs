@@ -227,49 +227,47 @@ module.exports = {
 
 
     addTodaysMenu: (async (req, res) => {
-        console.log("req",req.body)
-        const requestData = {
-            foodId: req.body.foodId,
-            category :req.body.category,
-            stock: req.body.stock,
-            preparedBy: req.userId
-        }
-        const validatorResponse = await userDataValidator.addTodaysMenuValidator(requestData);
-        
-        console.log("validator response : ",validatorResponse)
-        if (validatorResponse && validatorResponse.error) {
-            res.json({
-                isSuccess: false,
-                response: {},
-                error: validatorResponse.error
-            })
-        }
-        else if (validatorResponse && validatorResponse.value) {
-            userHelper.addTodaysMenuHelper(requestData).then((response) => {
-
-                if (response) {
-                    res.json({
-                        isSuccess: true,
-                        response: response.data,
-                        error: false
-                    })
-                } else {
-                    res.json({
+        const requestDataArray = req.body; 
+        const responses = [];
+    
+        for (const requestData of requestDataArray) {
+            // const validatorResponse = await userDataValidator.addTodaysMenuValidator(requestData);
+            // console.log("validator response : ", validatorResponse);
+    
+            // if (validatorResponse && validatorResponse.error) {
+                // responses.push({
+                //     isSuccess: false,
+                //     response: {},
+                //     error: validatorResponse.error
+                // });
+            // } else if (validatorResponse && validatorResponse.value) {
+                try {
+                    const response = await userHelper.addTodaysMenuHelper(requestData);
+    
+                    if (response) {
+                        responses.push({
+                            isSuccess: true,
+                            response: response.data,
+                            error: false
+                        });
+                    } else {
+                        responses.push({
+                            isSuccess: false,
+                            response: {},
+                            error: response.data
+                        });
+                    }
+                } catch (error) {
+                    responses.push({
                         isSuccess: false,
                         response: {},
-                        error: response.data
-                    })
+                        error: error.data
+                    });
                 }
-            }).catch((response) => {
-                res.json({
-                    isSuccess: false,
-                    response: {},
-                    error: response.data
-                })
-
-
-            })
+            // }
         }
+    
+        res.json(responses);
     }),
     deleteMenuItem: (async (req, res) => {
         const requestData = {

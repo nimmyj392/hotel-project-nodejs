@@ -195,14 +195,24 @@ module.exports = {
 
         });
     },
+  
+
 
     addTodaysMenuHelper: (requestData) => {
-
         return new Promise(async (resolve, reject) => {
-
-
+            console.log("req",requestData)
+            if (!requestData.foodId || !requestData.category || !requestData.stock || !requestData.preparedBy) {
+                const response = {
+                    isSuccess: false,
+                    data: "Missing required parameters",
+                    error: true
+                };
+                resolve(response);
+                return;
+            }
+    
             let startTime, endTime;
-
+    
             switch (requestData.category) {
                 case 'breakfast':
                     startTime = '09:00 AM';
@@ -219,61 +229,65 @@ module.exports = {
                 default:
                     console.log("Invalid category");
             }
-
-            const existingMenu = await todaysMenuDB.findOne({ foodId: requestData.foodId });
-            if (existingMenu) {
+    
+            try {
+                const existingMenu = await todaysMenuDB.findOne({ foodId: requestData.foodId });
+                if (existingMenu) {
+                    const response = {
+                        isSuccess: false,
+                        data: "You already added this food item in today's menu",
+                        error: true
+                    };
+                    resolve(response);
+                    return;
+                }
+    
+                const foodItem = await dishDB.findById(requestData.foodId);
+                if (!foodItem) {
+                    const response = {
+                        isSuccess: false,
+                        data: "Food item not found.",
+                        error: true
+                    };
+                    resolve(response);
+                    return;
+                }
+    
+                const todaysMenu = new todaysMenuDB({
+                    foodId: requestData.foodId,
+                    category: requestData.category,
+                    stock: requestData.stock,
+                    price: foodItem.price,
+                    startTime: startTime,
+                    endTime: endTime,
+                    preparedBy: requestData.preparedBy,
+                    name: foodItem.name,
+                    description: foodItem.description
+                });
+    
+                const savedMenu = await todaysMenu.save();
+    
                 const response = {
+                    isSuccess: true,
+                    data: {
+                        menu: {
+                            ...savedMenu.toObject(),
+                            price: foodItem.price,
+                            ...foodItem.toObject()
+                        }
+                    },
+                    error: false
+                };
+                resolve(response);
+            } catch (error) {
+                resolve({
                     isSuccess: false,
-                    data: "You already added this food item in today's menu",
+                    data: error.message || "An error occurred",
                     error: true
-                };
-                resolve(response);
-                return;
+                });
             }
-            const foodItem = await dishDB.findById(requestData.foodId);
-            if (!foodItem) {
-                const response = {
-                    success: false,
-                    data: "Food item not found.",
-                    error: true
-                };
-                resolve(response);
-                return;
-            }
-
-
-            const todaysMenu = new todaysMenuDB({
-                foodId: requestData.foodId,
-                category: requestData.category,
-                stock: requestData.stock,
-                price: foodItem.price,
-                startTime: startTime,
-                endTime: endTime,
-                preparedBy: requestData.preparedBy,
-                name: foodItem.name,
-                description: foodItem.description
-            });
-
-
-            const savedMenu = await todaysMenu.save();
-
-
-            const response = {
-                isSuccess: true,
-                data: {
-                    menu: {
-                        ...savedMenu.toObject(),
-                        price: foodItem.price,
-                        ...foodItem.toObject()
-                    }
-                },
-                error: false
-            };
-            resolve(response);
-
-        })
+        });
     },
-
     addTableHelper: (requestData) => {
 
         return new Promise(async (resolve, reject) => {

@@ -69,30 +69,30 @@ async function editMyDishValidator(requestData) {
     } catch (exception) { }
 }
 
-function addTodaysMenuValidator(requestData) {
-    try {
-        console.log("stated validation")
-        const schema = Joi.object().keys({
-            foodId: Joi.string().required(),
-            category: Joi.string().required(),
-            stock: Joi.number().required(),
-            preparedBy: Joi.string()
-        })
+// function addTodaysMenuValidator(requestData) {
+//     try {
+//         console.log("stated validation")
+//         const schema = Joi.object().keys({
+//             foodId: Joi.string().required(),
+//             category: Joi.string().required(),
+//             stock: Joi.number().required(),
+//             preparedBy: Joi.string()
+//         })
 
-        const { error, value } = schema.validate(requestData);
-consolel.log("Proxy ERROR",error)
-        if (error) {
-            return { error: error.details.map((x) => x.message).join(", ") };
-        } else if (value) {
-            return { value: value };
-        } else {
-            return { error: "something went wrong!!" }
-        }
+//         const { error, value } = schema.validate(requestData);
+// consolel.log("Proxy ERROR",error)
+//         if (error) {
+//             return { error: error.details.map((x) => x.message).join(", ") };
+//         } else if (value) {
+//             return { value: value };
+//         } else {
+//             return { error: "something went wrong!!" }
+//         }
 
-    } catch (exception) {
+//     } catch (exception) {
 
-    }
-}
+//     }
+// }
 
 function addTableValidator(requestData) {
 
@@ -188,27 +188,27 @@ function updateStatusByChefValidator(requestData) {
     }
 }
 
-// function calculateBillValidator(requestData) {
+function calculateBillValidator(requestData) {
 
-//     try {
-//         const schema = Joi.object().keys({
-//             orderId: Joi.string().length(24).hex().required()
-//         })
+    try {
+        const schema = Joi.object().keys({
+            orderId: Joi.string().length(24).hex().required()
+        })
 
-//         const { error, value } = schema.validate(requestData);
+        const { error, value } = schema.validate(requestData);
 
-//         if (error) {
-//             return { error: error.details.map((x) => x.message).join(", ") };
-//         } else if (value) {
-//             return { value: value };
-//         } else {
-//             return { error: "something went wrong!!" }
-//         }
+        if (error) {
+            return { error: error.details.map((x) => x.message).join(", ") };
+        } else if (value) {
+            return { value: value };
+        } else {
+            return { error: "something went wrong!!" }
+        }
 
-//     } catch (exception) {
+    } catch (exception) {
 
-//     }
-// }
+    }
+}
 
 function forgotPasswordValidator(requestData) {
 
@@ -260,7 +260,7 @@ module.exports = {
     addFoodByChefValidator,
     deleteFoodByChefValidator,
     editMyDishValidator,
-    addTodaysMenuValidator,
+    // addTodaysMenuValidator,
     addTableValidator,
     selectOrDeselectTableValidator,
     orderListValidator,
