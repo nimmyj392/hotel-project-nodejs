@@ -68,14 +68,6 @@ module.exports = {
 
         }
 
-        // const validatorResponse = await managerDataValidator.viewChefValidator(requestData);
-        // if (validatorResponse && validatorResponse.error) {
-        //     res.json({
-        //         isSuccess: false,
-        //         response: validatorResponse.error,
-        //         error: true
-        //     })
-        // } else if (validatorResponse && validatorResponse.value) {
         userHelper.getMyDishHelper(requestData)
             .then((response) => {
 

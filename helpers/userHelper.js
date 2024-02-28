@@ -69,7 +69,8 @@ module.exports = {
 
     getMyDishHelper: async (requestData) => {
 
-        const userId = mongoose.Types.ObjectId(requestData.preparedBy);
+        const userId = new mongoose.Types.ObjectId(requestData.preparedBy);
+
         const dishes = await foodDB.find({ preparedBy: userId, deleted: false });
 
         if (dishes && dishes.length > 0) {
