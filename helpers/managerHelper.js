@@ -59,6 +59,7 @@ module.exports = {
 
 
     loginHelper: (requestData) => {
+        
         return new Promise(async (resolve, reject) => {
             let user;
 
@@ -88,7 +89,6 @@ module.exports = {
 
             }
             else{ 
-
             const passwordMatch = await bcrypt.compare(requestData.password, user.password);
 
             if (passwordMatch) {

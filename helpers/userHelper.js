@@ -231,16 +231,7 @@ module.exports = {
             }
     
             try {
-                const existingMenu = await todaysMenuDB.findOne({ foodId: requestData.foodId });
-                if (existingMenu) {
-                    const response = {
-                        isSuccess: false,
-                        data: "You already added this food item in today's menu",
-                        error: true
-                    };
-                    resolve(response);
-                    return;
-                }
+               
     
                 const foodItem = await dishDB.findById(requestData.foodId);
                 if (!foodItem) {

@@ -37,8 +37,8 @@ module.exports = {
         if (validatorResponse && validatorResponse.error) {
             res.json({
                 isSuccess: false,
-                response: validatorResponse.error,
-                error: true
+                response: {},
+                error: validatorResponse.error
             })
         } else if (validatorResponse && validatorResponse.value) {
             managerHelper.createManagerHelper(requestData).then((response) => {
@@ -52,15 +52,15 @@ module.exports = {
                 } else {
                     res.json({
                         isSuccess: false,
-                        response: response.data,
-                        error: true
+                        response:{} ,
+                        error: response.data
                     })
                 }
             }).catch((error) => {
                 res.json({
                     isSuccess: false,
-                    response: error.data,
-                    error: true
+                    response: {},
+                    error: error.data
                 })
 
 
@@ -80,7 +80,7 @@ module.exports = {
             if (validatorResponse && validatorResponse.error) {
                 res.json({
                     isSuccess: false,
-                    response: validatorResponse.error,
+                    response: {},
                     error: true
                 });
             } else if (validatorResponse && validatorResponse.value) {
@@ -90,14 +90,14 @@ module.exports = {
                         if (response) {
                             res.json({
                                 isSuccess: true,
-                                response: response,
+                                response: response.data,
                                 error: false
                             });
                         } else {
                             res.json({
                                 isSuccess: false,
-                                response: 'User not found',
-                                error: true
+                                response: {},
+                                error: 'User not found'
                             });
                         }
                     })
@@ -105,8 +105,8 @@ module.exports = {
                         console.error('Error fetching user details:', error);
                         res.json({
                             isSuccess: false,
-                            response: error,
-                            error: true
+                            response: {},
+                            error: error
                         });
                     });
             }
@@ -114,8 +114,8 @@ module.exports = {
             console.error('Error validating user:', error);
             res.json({
                 isSuccess: false,
-                response: error,
-                error: true
+                response: {},
+                error: error
             });
         }
     },
@@ -149,8 +149,8 @@ module.exports = {
         if (validatorResponse && validatorResponse.error) {
             res.json({
                 isSuccess: false,
-                response: validatorResponse.error,
-                error: true
+                response: {},
+                error: validatorResponse.error
             })
         } else if (validatorResponse && validatorResponse.value) {
             managerHelper.createChefHelper(requestData).then((response) => {
@@ -164,15 +164,15 @@ module.exports = {
                 } else {
                     res.json({
                         isSuccess: false,
-                        response: response.data,
-                        error: true
+                        response:{} ,
+                        error: response.data
                     })
                 }
             }).catch((error) => {
                 res.json({
                     isSuccess: false,
-                    response: error.data,
-                    error: true
+                    response:{} ,
+                    error:error.data
                 })
 
 
@@ -207,15 +207,15 @@ module.exports = {
 
                 res.json({
                     isSuccess: false,
-                    response: response.data,
-                    error: true
+                    response:{} ,
+                    error: response.data
                 })
             }
         }).catch((error) => {
             res.json({
                 isSuccess: false,
-                response: error.data,
-                error: true
+                response:{} ,
+                error: error.data
             })
 
 
@@ -251,8 +251,8 @@ module.exports = {
         if (validatorResponse && validatorResponse.error) {
             res.json({
                 isSuccess: false,
-                response: validatorResponse.error,
-                error: true
+                response:{} ,
+                error: validatorResponse.error
             })
         } else if (validatorResponse && validatorResponse.value) {
             managerHelper.createSupplierHelper(requestData).then((response) => {
@@ -266,15 +266,15 @@ module.exports = {
                 } else {
                     res.json({
                         isSuccess: false,
-                        response: response.data,
-                        error: true
+                        response: {},
+                        error: response.data
                     })
                 }
             }).catch((error) => {
                 res.json({
                     isSuccess: false,
-                    response: error.data,
-                    error: true
+                    response: {},
+                    error: error.data
                 })
 
 
@@ -310,8 +310,8 @@ module.exports = {
 
                 res.json({
                     isSuccess: false,
-                    response: response.data,
-                    error: true
+                    response: {},
+                    error: response.data
                 })
             }
         })
@@ -346,8 +346,8 @@ module.exports = {
         if (validatorResponse && validatorResponse.error) {
             res.json({
                 isSuccess: false,
-                response: validatorResponse.error,
-                error: true
+                response: {},
+                error: validatorResponse.error
             })
         } else if (validatorResponse && validatorResponse.value) {
             managerHelper.createCashierHelper(requestData).then((response) => {
@@ -361,15 +361,15 @@ module.exports = {
                 } else {
                     res.json({
                         isSuccess: false,
-                        response: response.data,
-                        error: true
+                        response: {},
+                        error: response.data
                     })
                 }
             }).catch((error) => {
                 res.json({
                     isSuccess: false,
-                    response: error.data,
-                    error: true
+                    response:{},
+                    error:  error.data
                 })
 
 
@@ -405,15 +405,15 @@ module.exports = {
 
                 res.json({
                     isSuccess: false,
-                    response: response.data,
-                    error: true
+                    response: {},
+                    error: response.data
                 })
             }
         }).catch((error) => {
             res.json({
                 isSuccess: false,
-                response: error.data,
-                error: true
+                response: {},
+                error:error.data
             })
 
 
@@ -465,7 +465,8 @@ module.exports = {
 
             })
         }
-    }),
+    }),    
+                                           
     managerEdit: (async (req, res) => {
         const requestData = {
             email: req.body.email,
@@ -631,8 +632,8 @@ module.exports = {
             }).catch((error) => {
                 res.json({
                     isSuccess: false,
-                    response: error.data,
-                    error: true
+                    response:{} ,
+                    error: error.data
                 })
 
 
@@ -671,8 +672,8 @@ module.exports = {
             }).catch((error) => {
                 res.json({
                     isSuccess: false,
-                    response: error.data,
-                    error: true
+                    response: {},
+                    error: error.data
                 })
 
 
@@ -711,8 +712,8 @@ module.exports = {
             }).catch((error) => {
                 res.json({
                     isSuccess: false,
-                    response: error.data,
-                    error: true
+                    response: {},
+                    error: error.data
                 })
 
 
@@ -751,8 +752,8 @@ module.exports = {
             }).catch((error) => {
                 res.json({
                     isSuccess: false,
-                    response: error.data,
-                    error: true
+                    response: {},
+                    error: error.data
                 })
 
 
@@ -794,7 +795,7 @@ module.exports = {
             }).catch((response) => {
                 res.json({
                     isSuccess: false,
-                    response: response.data,
+                    response: {},
                     error: error.data
                 })
 
@@ -859,8 +860,8 @@ module.exports = {
         }).catch((error) => {
             res.json({
                 isSuccess: false,
-                response: error.data,
-                error: true
+                response: {},
+                error:error.data
             })
 
 
@@ -892,8 +893,8 @@ module.exports = {
         }).catch((error) => {
             res.json({
                 isSuccess: false,
-                response: error.data,
-                error: true
+                response:{},
+                error:  error.data
             })
 
 

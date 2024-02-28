@@ -43,15 +43,15 @@ module.exports = {
 
                     res.json({
                         isSuccess: false,
-                        response: response.data,
-                        error: true
+                        response: {},
+                        error: response.data
                     })
                 }
             }).catch((error) => {
                 res.json({
                     isSuccess: false,
-                    response: error.data,
-                    error: true
+                    response: {},
+                    error: error.data
                 })
 
 
@@ -91,16 +91,16 @@ module.exports = {
 
                     res.json({
                         isSuccess: false,
-                        response: response.data,
-                        error: true
+                        response: {},
+                        error: response.data
                     })
                 }
             }).catch(error => {
                 console.error('Error fetching dish', error);
                 res.json({
                     isSuccess: false,
-                    response: error,
-                    error: true
+                    response:{} ,
+                    error: error.data
                 });
             });
 
@@ -183,8 +183,8 @@ module.exports = {
             }).catch((error) => {
                 res.json({
                     isSuccess: false,
-                    response: error.data,
-                    error: true
+                    response:{},
+                    error:  error.data
                 })
 
 
@@ -227,20 +227,12 @@ module.exports = {
 
 
     addTodaysMenu: (async (req, res) => {
-        const requestDataArray = req.body; 
+        const requestDataArray = Array.isArray(req.body) ? req.body : [req.body]; 
+    
         const responses = [];
     
         for (const requestData of requestDataArray) {
-            // const validatorResponse = await userDataValidator.addTodaysMenuValidator(requestData);
-            // console.log("validator response : ", validatorResponse);
-    
-            // if (validatorResponse && validatorResponse.error) {
-                // responses.push({
-                //     isSuccess: false,
-                //     response: {},
-                //     error: validatorResponse.error
-                // });
-            // } else if (validatorResponse && validatorResponse.value) {
+          
                 try {
                     const response = await userHelper.addTodaysMenuHelper(requestData);
     
@@ -322,8 +314,8 @@ module.exports = {
         if (validatorResponse && validatorResponse.error) {
             res.json({
                 isSuccess: false,
-                response: validatorResponse.error,
-                error: true
+                response: {},
+                error: validatorResponse.error
             })
         } else if (validatorResponse && validatorResponse.value) {
             userHelper.addTableHelper(requestData).then((response) => {
@@ -339,8 +331,8 @@ module.exports = {
 
                     res.json({
                         isSuccess: false,
-                        response: response.data,
-                        error: true
+                        response: {},
+                        error: response.data
                     })
                 }
             }).catch((response) => {
@@ -400,8 +392,8 @@ module.exports = {
         if (validatorResponse && validatorResponse.error) {
             res.json({
                 isSuccess: false,
-                response: validatorResponse.error,
-                error: true
+                response: {},
+                error: validatorResponse.error
             })
         } else if (validatorResponse && validatorResponse.value) {
             userHelper.selectOrDeselectTableHelper(requestData).then((response) => {
@@ -417,8 +409,8 @@ module.exports = {
 
                     res.json({
                         isSuccess: false,
-                        response: response.data,
-                        error: true
+                        response: {},
+                        error: response.data
                     })
                 }
             }).catch((response) => {
@@ -497,8 +489,8 @@ module.exports = {
 
                     res.json({
                         isSuccess: false,
-                        response: response.data,
-                        error: true
+                        response: {},
+                        error: response.data
                     })
                 }
             }).catch((response) => {
@@ -623,16 +615,16 @@ module.exports = {
 
                     res.json({
                         isSuccess: false,
-                        response: response.data,
-                        error: true
+                        response: {},
+                        error: response.data
                     })
                 }
             }).catch(error => {
                 console.error('Error fetching dish', error);
                 res.json({
                     isSuccess: false,
-                    response: error,
-                    error: true
+                    response: {},
+                    error: error
                 });
             });
 
@@ -655,16 +647,16 @@ module.exports = {
 
                     res.json({
                         isSuccess: false,
-                        response: response.data,
-                        error: true
+                        response: {},
+                        error: response.data
                     })
                 }
             }).catch(error => {
                 console.error('Error fetching dish', error);
                 res.json({
                     isSuccess: false,
-                    response: error,
-                    error: true
+                    response: {},
+                    error: error
                 });
             });
 
@@ -700,16 +692,16 @@ module.exports = {
 
                     res.json({
                         isSuccess: false,
-                        response: response.data,
-                        error: true
+                        response: {},
+                        error: response.data
                     })
                 }
             }).catch(error => {
                 console.error('Error fetching dish', error);
                 res.json({
                     isSuccess: false,
-                    response: error,
-                    error: true
+                    response: {},
+                    error: error
                 });
             });
 
@@ -732,16 +724,16 @@ module.exports = {
 
                     res.json({
                         isSuccess: false,
-                        response: response.data,
-                        error: true
+                        response:{} ,
+                        error: response.data
                     })
                 }
             }).catch(error => {
                 console.error('Error fetching dish', error);
                 res.json({
                     isSuccess: false,
-                    response: error,
-                    error: true
+                    response: {},
+                    error: error
                 });
             });
 
@@ -789,8 +781,8 @@ module.exports = {
             console.error('Error sending OTP:', error);
             return res.json({
                 isSuccess: false,
-                response: "Error sending OTP",
-                error: true
+                response:{} ,
+                error: "Error sending OTP"
             });
         }
     },

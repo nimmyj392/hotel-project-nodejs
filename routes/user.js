@@ -34,4 +34,5 @@ router.post("/cancelOrder",verifyToken.verifyToken("supplier"),userController.ca
 router.post("/forgotPassword",verifyToken.verifyToken("manager"),userController.forgotPassword) 
 router.post("/verifyOTPAndStoreUser",verifyToken.verifyToken("manager"),userController.verifyOTPAndStoreUser)
 router.delete("/logOut",verifyToken.verifyToken(),userController.logOut)
+
 module.exports = router
