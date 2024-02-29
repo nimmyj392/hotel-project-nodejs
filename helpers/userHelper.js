@@ -68,7 +68,7 @@ module.exports = {
 
 
     getMyDishHelper: async (requestData) => {
-
+        return new Promise(async (resolve, reject) => {
         const userId = new mongoose.Types.ObjectId(requestData.preparedBy);
 
         const dishes = await foodDB.find({ preparedBy: userId, deleted: false });
@@ -89,7 +89,7 @@ module.exports = {
             };
             reject(response);
         }
-
+    })
     },
 
     editMyDishHelper: (requestData) => {
