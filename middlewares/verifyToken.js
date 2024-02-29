@@ -4,9 +4,9 @@ const mongoose = require("mongoose");
 module.exports = {
     verifyToken: (role) => {
         return async (req, res, next) => {
-            console.log("req.headers : ",req.headers)
+            
             const clientToken = req.headers['authorization'];
-            console.log("clientToken : ",clientToken)
+          
 
             if (!clientToken) {
                 return res.status(401).json({
@@ -15,7 +15,7 @@ module.exports = {
                     error: "No token provided"
                 });
             }
-console.log("hi")
+
             try {
                 let secretKey;
                 let User;

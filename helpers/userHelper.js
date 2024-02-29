@@ -2,6 +2,10 @@ const dishDB = require("../models/foodModels/foodSchema")
 const { Response } = require("aws-sdk");
 const foodDB = require("../models/foodModels/foodSchema")
 const tableDB = require("../models/tableSchema")
+const managerDB = require("../models/managerModels/managerSchema")
+const supplierDB = require("../models/userModels/supplierSchema")
+const chefDB = require("../models/userModels/chefSchema")
+const cashierDB = require("../models/userModels/cashierSchema")
 const orderDB = require("../models/orderSchema")
 const todaysMenuDB = require("../models/foodModels/todaysmenuSchema")
 const paymentDB = require("../models/paymentSchema")
@@ -664,7 +668,7 @@ module.exports = {
 
 
 
-    collectPaymentInCashHelper: async () => {
+    collectPaymentByCashHelper: async () => {
         return new Promise(async (resolve, reject) => {
 
             const order = await orderDB.findOne({ 'chefUpdates.status': 'served' }).sort({ createdAt: -1 });

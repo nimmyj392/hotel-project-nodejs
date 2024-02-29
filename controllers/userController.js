@@ -699,9 +699,9 @@ module.exports = {
 
 
     }),
-    collectPaymentInCash: (async (req, res) => {
+    collectPaymentByCash: (async (req, res) => {
 
-        userHelper.collectPaymentInCashHelper()
+        userHelper.collectPaymentByCashHelper()
             .then((response) => {
 
                 if (response) {
@@ -892,8 +892,8 @@ module.exports = {
     }),
     logOut: (async (req, res) => {
         const requestData = {
-            userId: req.userId,
-            userType: req.userType
+            userId: req.body.userId,
+            userType: req.body.userType
         }
         const validatorResponse = await userDataValidator.logOutValidator(requestData);
 
