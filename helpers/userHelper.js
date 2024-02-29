@@ -808,16 +808,16 @@ module.exports = {
 
         switch (requestData.userType) {
             case 'manager':
-                UserDB = ManagerDB;
+                UserDB = managerDB;
                 break;
             case 'chef':
-                UserDB = ChefDB;
+                UserDB = chefDB;
                 break;
             case 'supplier':
-                UserDB = SupplierDB;
+                UserDB = supplierDB;
                 break;
             case 'cashier':
-                UserDB = CashierDB;
+                UserDB = cashierDB;
                 break;
             default:
                 return { success: false, data: "Invalid user type" };
