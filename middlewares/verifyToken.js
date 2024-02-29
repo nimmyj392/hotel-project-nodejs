@@ -5,7 +5,7 @@ module.exports = {
     verifyToken: (role) => {
         return async (req, res, next) => {
             const clientToken = req.headers['authorization'];
-
+console.log("token : ",clientToken)
             if (!clientToken) {
                 return res.status(401).json({
                     isSuccess: false,
