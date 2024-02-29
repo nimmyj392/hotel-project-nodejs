@@ -22,7 +22,7 @@ router.delete("/deleteMenuItem",verifyToken.verifyToken("chef"),userController.d
 router.post("/addTable",verifyToken.verifyToken("supplier"),upload.fields([]),userController.addTable)
 router.post("/viewTable",verifyToken.verifyToken("supplier"),userController.viewTable)
 router.post("/selectOrDeselectTable",verifyToken.verifyToken("supplier"),userController.selectOrDeselectTable)
-router.post("/viewToday'sMenu",verifyToken.verifyToken("supplier"),userController.viewTodaysMenu)
+router.post("/viewTodaysMenu",userController.viewTodaysMenu)
 router.post("/orderList",verifyToken.verifyToken("supplier"),userController.orderList)
 router.get("/getAllOrdersForChef",verifyToken.verifyToken("chef"),userController.getAllOrdersForChef)
 router.post("/updateStatusByChef",verifyToken.verifyToken("chef"),userController.updateStatusByChef)
