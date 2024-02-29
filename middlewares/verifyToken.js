@@ -15,7 +15,7 @@ module.exports = {
                     error: "No token provided"
                 });
             }
-
+console.log("hi")
             try {
                 let secretKey;
                 let User;
