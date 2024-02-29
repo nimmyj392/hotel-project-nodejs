@@ -4,8 +4,10 @@ const mongoose = require("mongoose");
 module.exports = {
     verifyToken: (role) => {
         return async (req, res, next) => {
+            console.log("req.headers : ",req.headers)
             const clientToken = req.headers['authorization'];
-console.log("token : ",clientToken)
+            console.log("clientToken : ",clientToken)
+
             if (!clientToken) {
                 return res.status(401).json({
                     isSuccess: false,

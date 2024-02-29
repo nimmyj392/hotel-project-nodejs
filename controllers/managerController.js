@@ -472,7 +472,6 @@ module.exports = {
             email: req.body.email,
             phoneNumber: req.body.phoneNumber,
             experience: req.body.experience,
-            password: req.body.password,
             name: req.body.name,
         }
         const validatorResponse = await managerDataValidator.managerEditValidator(requestData);
