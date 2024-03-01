@@ -304,7 +304,7 @@ module.exports = {
         })
     },
     createSupplierHelper: async (requestData) => {
-
+        return new Promise(async (resolve, reject) => {
         const existingUser = await supplierDB.findOne({ email: requestData.email, deleted: false });
 
         if (existingUser !== null) {
@@ -341,7 +341,7 @@ module.exports = {
                 reject(response)
             }
         }
-
+    })
     },
 
     viewSupplierHelper: (requestData) => {
@@ -423,6 +423,7 @@ module.exports = {
     },
     createCashierHelper: async (requestData) => {
 
+        return new Promise(async (resolve, reject) => {
         const existingUser = await cashierDB.findOne({ email: requestData.email, deleted: false });
 
         if (existingUser !== null) {
@@ -460,7 +461,7 @@ module.exports = {
             }
         }
 
-
+    })
 
     },
 
@@ -744,7 +745,7 @@ module.exports = {
 
             const payments = await paymentDB.find({ deleted: requestData.deleted });
 
-            if (orderList.length === 0) {
+            if (payments.length === 0) {
                 const response = {
                     success: false,
                     data: "No payments found."

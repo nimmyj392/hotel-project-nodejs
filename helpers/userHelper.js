@@ -73,27 +73,27 @@ module.exports = {
 
     getMyDishHelper: async (requestData) => {
         return new Promise(async (resolve, reject) => {
-        const userId = new mongoose.Types.ObjectId(requestData.preparedBy);
+            const userId = new mongoose.Types.ObjectId(requestData.preparedBy);
 
-        const dishes = await foodDB.find({ preparedBy: userId, deleted: false });
+            const dishes = await foodDB.find({ preparedBy: userId, deleted: false });
 
-        if (dishes && dishes.length > 0) {
+            if (dishes && dishes.length > 0) {
 
-            const response = {
-                success: true,
-                data: dishes
-            };
-            resolve(response);
-        } else {
+                const response = {
+                    success: true,
+                    data: dishes
+                };
+                resolve(response);
+            } else {
 
-            console.log("No dishes found for the user");
-            const response = {
-                success: true,
-                data: "No dishes found for the user"
-            };
-            reject(response);
-        }
-    })
+                console.log("No dishes found for the user");
+                const response = {
+                    success: true,
+                    data: "No dishes found for the user"
+                };
+                reject(response);
+            }
+        })
     },
 
     editMyDishHelper: (requestData) => {
@@ -200,12 +200,12 @@ module.exports = {
 
         });
     },
-  
+
 
 
     addTodaysMenuHelper: (requestData) => {
         return new Promise(async (resolve, reject) => {
-            console.log("req",requestData)
+            console.log("req", requestData)
             if (!requestData.foodId || !requestData.category || !requestData.stock || !requestData.preparedBy) {
                 const response = {
                     isSuccess: false,
@@ -215,9 +215,9 @@ module.exports = {
                 resolve(response);
                 return;
             }
-    
+
             let startTime, endTime;
-    
+
             switch (requestData.category) {
                 case 'breakfast':
                     startTime = '09:00 AM';
@@ -234,10 +234,10 @@ module.exports = {
                 default:
                     console.log("Invalid category");
             }
-    
+
             try {
-               
-    
+
+
                 const foodItem = await dishDB.findById(requestData.foodId);
                 if (!foodItem) {
                     const response = {
@@ -248,7 +248,7 @@ module.exports = {
                     resolve(response);
                     return;
                 }
-    
+
                 const todaysMenu = new todaysMenuDB({
                     foodId: requestData.foodId,
                     category: requestData.category,
@@ -260,17 +260,15 @@ module.exports = {
                     name: foodItem.name,
                     description: foodItem.description
                 });
-    
+
                 const savedMenu = await todaysMenu.save();
-    
+
                 const response = {
                     isSuccess: true,
                     data: {
-                        menu: {
-                            ...savedMenu.toObject(),
-                            price: foodItem.price,
-                            ...foodItem.toObject()
-                        }
+                        ...savedMenu.toObject(),
+                        price: foodItem.price,
+                        ...foodItem.toObject()
                     },
                     error: false
                 };
@@ -409,8 +407,8 @@ module.exports = {
 
     },
 
-    orderListHelper: (requestData) => {
-        return new Promise(async (resolve, reject) => {
+    orderListHelper: (requestDataFormatted) => {
+        return Promise.all(requestDataFormatted.map(async (requestData) => {
 
             const foodItem = await todaysMenuDB.findOne({ foodId: requestData.foodId });
             if (!foodItem) {
@@ -461,15 +459,21 @@ module.exports = {
                 const response = {
                     success: true,
                     data: {
-                        order: dbResponse,
+                        order: {
+                            ...dbResponse.toObject(),
+                            items: dbResponse.items.map(item => ({
+                                ...item.toObject(),
+                                itemPrice: item.quantity * item.price 
+                            }))
+                        },
                         totalPrice: totalPrice
                     }
                 };
-                resolve(response);
+                
             }
 
 
-        });
+        }));
     },
 
 

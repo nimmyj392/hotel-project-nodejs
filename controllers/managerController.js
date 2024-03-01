@@ -81,7 +81,7 @@ module.exports = {
                 res.json({
                     isSuccess: false,
                     response: {},
-                    error: true
+                    error:validatorResponse.error
                 });
             } else if (validatorResponse && validatorResponse.value) {
                 managerHelper.loginHelper(requestData)
@@ -144,7 +144,7 @@ module.exports = {
 
 
 
-        const validatorResponse = await managerValidator.createChefValidator(requestData);
+        const validatorResponse = await managerDataValidator.createChefValidator(requestData);
 
         if (validatorResponse && validatorResponse.error) {
             res.json({

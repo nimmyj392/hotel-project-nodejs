@@ -453,14 +453,20 @@ module.exports = {
 
     }),
     orderList: (async (req, res) => {
-        const requestData = {
-            tableId: req.body.tableId,
-            foodId: req.body.foodId,
-            supplierId: req.userId,
-            quantity: req.body.quantity
-        }
+        
+        const requestDataArray = req.body; 
 
-        const validatorResponse = await userDataValidator.orderListValidator(requestData);
+        
+        for (const requestData of requestDataArray) {
+            const requestDataFormatted = {
+                tableId: requestData.tableId,
+                foodId: requestData.foodId,
+                supplierId: req.userId,
+                quantity: requestData.quantity
+            };
+
+
+        const validatorResponse = await userDataValidator.orderListValidator(requestDataFormatted);
         if (validatorResponse && validatorResponse.error) {
             res.json({
                 isSuccess: false,
@@ -468,7 +474,7 @@ module.exports = {
                 error: true
             })
         } else if (validatorResponse && validatorResponse.value) {
-            userHelper.orderListHelper(requestData).then((response) => {
+            userHelper.orderListHelper(requestDataFormatted).then((response) => {
 
                 if (response) {
                     res.json({
@@ -497,7 +503,7 @@ module.exports = {
         }
 
 
-    }),
+    }}),
 
     getAllOrdersForChef: (async (req, res) => {
 
