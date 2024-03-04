@@ -24,8 +24,7 @@ const foodSchema = new Schema({
       },
     preparedBy: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Chef',
-        required: true
+        ref: 'Chef'
     },
     deleted: {
         type: Boolean,

@@ -226,6 +226,7 @@ module.exports = {
         for (const requestData of requestDataArray) {
           
                 try {
+                    
                     const response = await userHelper.addTodaysMenuHelper(requestData);
     
                     if (response) {
@@ -466,14 +467,14 @@ module.exports = {
             };
 
 
-        const validatorResponse = await userDataValidator.orderListValidator(requestDataFormatted);
-        if (validatorResponse && validatorResponse.error) {
-            res.json({
-                isSuccess: false,
-                response: validatorResponse.error,
-                error: true
-            })
-        } else if (validatorResponse && validatorResponse.value) {
+        // const validatorResponse = await userDataValidator.orderListValidator(requestDataFormatted);
+        // if (validatorResponse && validatorResponse.error) {
+        //     res.json({
+        //         isSuccess: false,
+        //         response: validatorResponse.error,
+        //         error: true
+        //     })
+        // } else if (validatorResponse && validatorResponse.value) {
             userHelper.orderListHelper(requestDataFormatted).then((response) => {
 
                 if (response) {
@@ -500,10 +501,10 @@ module.exports = {
 
 
             })
-        }
+        // }
+    }
 
-
-    }}),
+    }),
 
     getAllOrdersForChef: (async (req, res) => {
 
@@ -836,7 +837,7 @@ module.exports = {
             if (dbResponse) {
                 return res.json({
                     isSuccess: true,
-                    response: dbResponse,
+                    response: "passord updated successfully!",
                     error: null,
                 });
             } else {
@@ -898,7 +899,7 @@ module.exports = {
     }),
     logOut: (async (req, res) => {
         const requestData = {
-            userId: req.body.userId,
+            userId: req.userId,
             userType: req.body.userType
         }
         const validatorResponse = await userDataValidator.logOutValidator(requestData);

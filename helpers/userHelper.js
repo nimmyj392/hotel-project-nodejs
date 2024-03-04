@@ -22,12 +22,12 @@ module.exports = {
     addFoodByChefHelper: (requestData) => {
         return new Promise(async (resolve, reject) => {
 
-            if (!requestData.name || !requestData.description || !requestData.category || !requestData.preparedBy) {
+            if (!requestData.name || !requestData.description || !requestData.category ) {
                 const response = {
                     success: false,
 
-                    data: "Food with this name already exists."
-                };
+                    data: "missing required fields",
+                    error:true}
                 reject(response);
             }
 
@@ -37,8 +37,8 @@ module.exports = {
             if (existingFood) {
                 const response = {
                     success: false,
-                    message: "Food with this name already exists.",
-                    data: existingFood
+                    data: "Food with this name already exists.",
+                    error:true
                 };
                 reject(response);
             } else {
@@ -55,15 +55,17 @@ module.exports = {
                 if (!dbResponse) {
                     const response = {
                         success: false,
-                        message: "Failed to insert food into the database."
+                        message: "Failed to insert food into the database.",
+                        error:true
                     };
                     resolve(response);
                 } else {
                     const response = {
                         success: true,
-                        data: dbResponse
+                        data: dbResponse,
+                        error: false
                     };
-                    reject(response);
+                    resolve(response);
                 }
             }
 
@@ -206,7 +208,7 @@ module.exports = {
     addTodaysMenuHelper: (requestData) => {
         return new Promise(async (resolve, reject) => {
             console.log("req", requestData)
-            if (!requestData.foodId || !requestData.category || !requestData.stock || !requestData.preparedBy) {
+            if (!requestData.dishId || !requestData.category || !requestData.stock || !requestData.preparedBy) {
                 const response = {
                     isSuccess: false,
                     data: "Missing required parameters",
@@ -238,7 +240,7 @@ module.exports = {
             try {
 
 
-                const foodItem = await dishDB.findById(requestData.foodId);
+                const foodItem = await dishDB.findById(requestData.dishId);
                 if (!foodItem) {
                     const response = {
                         isSuccess: false,
@@ -248,9 +250,10 @@ module.exports = {
                     resolve(response);
                     return;
                 }
+              
 
                 const todaysMenu = new todaysMenuDB({
-                    foodId: requestData.foodId,
+                    foodId: requestData.dishId,
                     category: requestData.category,
                     stock: requestData.stock,
                     price: foodItem.price,
@@ -408,41 +411,42 @@ module.exports = {
     },
 
     orderListHelper: (requestDataFormatted) => {
-        return Promise.all(requestDataFormatted.map(async (requestData) => {
+        console.log(requestDataFormatted)
+        return new Promise(async (resolve, reject) => {
 
-            const foodItem = await todaysMenuDB.findOne({ foodId: requestData.foodId });
+            const foodItem = await todaysMenuDB.findOne({ foodId:requestDataFormatted.foodId });
             if (!foodItem) {
                 const response = {
                     success: false,
-                    message: "Food item not found."
+                    data: "Food item not found."
                 };
                 reject(response);
 
             }
 
-            if (foodItem.stock < requestData.quantity) {
+            if (foodItem.stock < requestDataFormatted.quantity) {
                 const response = {
                     success: false,
-                    message: "Insufficient stock for the requested quantity."
+                    data: "Insufficient stock for the requested quantity."
                 };
                 reject(response);
 
             }
 
-            await todaysMenuDB.updateOne({ _id: foodItem._id }, { $inc: { stock: -requestData.quantity } });
+            await todaysMenuDB.updateOne({ _id: foodItem._id }, { $inc: { stock: -requestDataFormatted.quantity } });
 
-            const totalPrice = requestData.quantity * foodItem.price;
+            const totalPrice = requestDataFormatted.quantity * foodItem.price;
 
             const items = [{
-                foodId: requestData.foodId,
-                quantity: requestData.quantity,
+                foodId: requestDataFormatted.foodId,
+                quantity: requestDataFormatted.quantity,
                 price: foodItem.price
             }];
 
             const newOrder = new orderDB({
-                tableId: requestData.tableId,
+                tableId: requestDataFormatted.tableId,
                 items: items,
-                supplierId: requestData.supplierId,
+                supplierId: requestDataFormatted.supplierId,
                 chefUpdates: [{ status: 'pending' }],
                 totalPrice: totalPrice
             })
@@ -469,11 +473,11 @@ module.exports = {
                         totalPrice: totalPrice
                     }
                 };
-                
+                resolve(response)
             }
 
 
-        }));
+        });
     },
 
 
@@ -543,36 +547,40 @@ module.exports = {
 
 
         });
-    },
-
-    viewOrdersServedHelper: async (requestData) => {
+    },viewOrdersServedHelper: async (requestData) => {
         return new Promise(async (resolve, reject) => {
-
-
-            const orders = await orderDB.find({ 'chefUpdates.status': 'served' });
-
-
-            if (!orders || orders.length === 0) {
+            try {
+                const orders = await orderDB.find({ 'chefUpdates.status': "served" });
+               
+                // Filter out orders with status 'pending'
+                const servedOrders = orders.filter(order => order.chefUpdates.some(update => update.status === "served"));
+                
+                if (!servedOrders || servedOrders.length === 0) {
+                    const response = {
+                        success: true,
+                        data: "No served orders found."
+                    };
+                    resolve(response);
+                    return;
+                }
+    
                 const response = {
                     success: true,
-                    data: "No orders served by chef found."
-                };
-                reject(response);
-                return;
-            }
-
-            else {
-                const response = {
-                    success: true,
-                    data: orders,
-
+                    data: servedOrders
                 };
                 resolve(response);
+    
+            } catch (error) {
+                const response = {
+                    success: false,
+                    data: error
+                };
+                reject(response);
             }
-
-
         });
     },
+    
+    
     viewOrdersPendingHelper: async (requestData) => {
         return new Promise(async (resolve, reject) => {
 
@@ -601,74 +609,84 @@ module.exports = {
     },
     calculateBillHelper: async () => {
         return new Promise(async (resolve, reject) => {
-
-            const order = await orderDB.findOne({ 'chefUpdates.status': 'served' }).sort({ createdAt: -1 });
-
-            if (!order) {
-                const response = { success: false, data: "No served orders found." };
-                reject(response)
-
-            }
-            const totalBillAmount = order.totalPrice;
-
-            const razorpayOrder = await razorpay.orders.create({
-                amount: totalBillAmount * 100,
-                currency: 'INR',
-                receipt: `order_${order._id}`,
-                payment_capture: '1'
-            });
-
-            let unpaidItem;
-
-
-            for (let i = order.items.length - 1; i >= 0; i--) {
-                if (!order.items[i].paid) {
-                    unpaidItem = order.items[i];
-                    break;
+            try {
+                const order = await orderDB.findOne({ 'chefUpdates.status': 'served' }).sort({ createdAt: -1 });
+    
+                if (!order) {
+                    const response = { success: false, data: "No served orders found." };
+                    resolve(response);
+                    return;
                 }
-            }
-
-
-            if (!unpaidItem) {
-                const response = { success: false, data: "No unpaid items found in the order." };
-                reject(response)
-                return
-            }
-
-
-            const payment = new paymentDB({
-                orderId: order._id,
-                totalAmount: totalBillAmount,
-                amountPaid: totalBillAmount,
-                currency: 'INR',
-                receipt: razorpayOrder.id,
-                dishId: unpaidItem.foodId
-            });
-
-
-            await payment.save();
-
-
-            unpaidItem.paid = true;
-
-
-            await order.save();
-
-            const response = {
-                success: true,
-                data: "Bill calculated successfully.",
-                totalBillAmount: totalBillAmount,
-                razorpayOrder: {
-                    id: razorpayOrder.id,
-                    amount_paid: totalBillAmount
+    
+                const totalBillAmount = order.totalPrice;
+                
+                if (totalBillAmount < 1) {
+                    const response = { success: false, data: "Total bill amount must be at least INR 1.00" };
+                    resolve(response);
+                    return;
                 }
+                let razorpayOrder;
+                try {
+                    razorpayOrder = await razorpay.orders.create({
+                        amount: totalBillAmount * 100,
+                        currency: 'INR',
+                        receipt: `order_${order._id}`,
+                        payment_capture: '1'
+                    });
+                } catch (razorpayError) {
+                    
+                    console.error('Razorpay error:', razorpayError);
+                    const response = { success: false, data: "Error creating Razorpay order." };
+                    resolve(response);
+                    return;
+                }
+    
+                let unpaidItem;
+                for (let i = order.items.length - 1; i >= 0; i--) {
+                    if (!order.items[i].paid) {
+                        unpaidItem = order.items[i];
+                        break;
+                    }
+                }
+    
+                if (!unpaidItem) {
+                    const response = { success: false, data: "No unpaid items found in the order." };
+                    resolve(response);
+                    return;
+                }
+    
+                const payment = new paymentDB({
+                    orderId: order._id,
+                    totalAmount: totalBillAmount,
+                    amountPaid: totalBillAmount,
+                    currency: 'INR',
+                    receipt: razorpayOrder.id,
+                    dishId: unpaidItem.foodId
+                });
+    
+                await payment.save();
+                unpaidItem.paid = true;
+                await order.save();
+    
+                const response = {
+                    success: true,
+                    data: "Bill calculated successfully.",
+                    totalBillAmount: totalBillAmount,
+                    razorpayOrder: {
+                        id: razorpayOrder.id,
+                        amount_paid: totalBillAmount
+                    }
+                };
+                resolve(response);
+            } catch (razorpayError) {
+                console.error('Razorpay error:', razorpayError);
+                const response = { success: false, data: "Error creating Razorpay order. Details: " + razorpayError.message };
+                resolve(response);
+                return;
             }
-            resolve(response)
-            return;
-
         });
     },
-
+    
 
 
 
@@ -678,7 +696,7 @@ module.exports = {
             const order = await orderDB.findOne({ 'chefUpdates.status': 'served' }).sort({ createdAt: -1 });
 
             if (!order) {
-                const response = { success: false, data: "No served orders found." };
+                const response = { success: false, data: "No served orders found.",error:true };
                 reject(response);
 
             }
@@ -691,8 +709,9 @@ module.exports = {
                 }
             }
 
+console.log(unpaidItem)
             if (!unpaidItem) {
-                const response = { success: false, data: "No unpaid items found in the order." };
+                const response = { success: false, data: "No unpaid items found in the order.", else:false };
                 reject(response);
                 return;
             }
@@ -715,7 +734,7 @@ module.exports = {
             unpaidItem.paid = true;
             await order.save();
 
-            const response = { success: true, data: "Payment received in cash. Order marked as paid." };
+            const response = { success: true, data: "Payment received in cash. Order marked as paid.",else:false };
             resolve(response);
 
         });
@@ -824,14 +843,14 @@ module.exports = {
                 UserDB = cashierDB;
                 break;
             default:
-                return { success: false, data: "Invalid user type" };
+                return { success: false, data: "Invalid user type" ,error:true};
         }
 
 
         const user = await UserDB.findById(requestData.userId);
 
         if (!user) {
-            const response = { success: false, data: "User not found", error: false };
+            const response = { success: false, data: "User not found", error: true };
             reject(response)
         }
 
@@ -847,7 +866,7 @@ module.exports = {
 
         await user.save();
 
-        const response = { success: true, data: "Logout successful" };
+        const response = { success: true, data: "Logout successfull" ,error:false};
         resolve(response)
 
     }
