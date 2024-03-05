@@ -99,6 +99,7 @@ module.exports = {
     }),
 
     editMyDish: (async (req, res) => {
+        console.log("req",req)
         const requestData = {
             dishId: req.body.dishId,
             name: req.body.name,
