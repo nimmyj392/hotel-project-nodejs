@@ -411,7 +411,7 @@ module.exports = {
     },
 
     orderListHelper: (requestDataFormatted) => {
-        console.log(requestDataFormatted)
+        console.log("requestDataFormattedx",requestDataFormatted)
         return new Promise(async (resolve, reject) => {
 
             const foodItem = await todaysMenuDB.findOne({ foodId:requestDataFormatted.foodId });

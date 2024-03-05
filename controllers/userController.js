@@ -457,7 +457,7 @@ module.exports = {
     orderList: (async (req, res) => {
       
         const requestDataArray = req.body; 
-
+console.log("requestArray",requestDataArray)
         console.log(typeof requestDataArray)
         for (const requestData of requestDataArray) {
             const requestDataFormatted = {
