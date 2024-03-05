@@ -11,7 +11,7 @@ const orderSchema = new Schema({
     foodId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Dish', 
-      required: true
+      
     },
     quantity: {
       type: Number,
@@ -20,7 +20,10 @@ const orderSchema = new Schema({
     paid: {
       type: Boolean,
       default: false
-  }
+  },
+  price: {
+    type: Number
+}
   }],
   supplierId: {
     type: mongoose.Schema.Types.ObjectId,

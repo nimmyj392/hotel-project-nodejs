@@ -5,6 +5,8 @@ const userDataValidator = require("../controllers/validator/userValidator");
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 
+const { orderListHelper } = require('../helpers/userHelper')
+
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -454,44 +456,49 @@ module.exports = {
 
 
     }),
-    orderList: async (req, res) => {
-        console.log("giiii")
-        const requestData = req.body; // Assuming requestData is the array you want to iterate over
-        console.log("requestArray", requestData);
-        console.log(typeof requestData);
-        
-        if (Array.isArray(requestData.selectedDishes)) {
-            for (const dish of requestData.selectedDishes) {
-                const requestDataFormatted = {
-                    tableId: requestData.tableId,
-                    foodId: dish.foodId,
-                    supplierId: req.userId,
-                    quantity: dish.quantity
-                };
-    
-                try {
-                    const response = await userHelper.orderListHelper(requestDataFormatted);
-                    res.json({
-                        isSuccess: true,
-                        response: response,
-                        error: false
-                    });
-                } catch (error) {
-                    res.json({
-                        isSuccess: false,
-                        response: {},
-                        error: error.message
-                    });
-                }
-            }
-        } else {
-            res.json({
-                isSuccess: false,
-                response: {},
-                error: "selectedDishes is not an array"
-            });
+    // Assuming middleware or function extracts supplierId from token and returns it
+
+
+orderList: async (req, res) => {
+    console.log("giiii");
+    const requestData = req.body;
+    console.log("requestArray", requestData);
+    console.log(typeof requestData);
+
+    if (!Array.isArray(requestData)) {
+        res.json({
+            isSuccess: false,
+            response: {},
+            error: "Request data must be an array of objects"
+        });
+        return; // Exit the function if request data is not an array
+    }
+
+    try {
+        const responses = []; // Store individual responses for each order
+
+        // Inject extracted supplierId into each object
+        for (const orderData of requestData) {
+            orderData.supplierId = req.userId; // Assuming orderData is an object
+            const response = await userHelper.orderListHelper(orderData);
+            responses.push(response);
         }
-    },
+
+        res.json({
+            isSuccess: true,
+            response: responses, // Send an array of responses
+            error: false
+        });
+    } catch (error) {
+        res.json({
+            isSuccess: false,
+            response: {},
+            error: error.message
+        });
+    }
+},
+
+    
     
 
     getAllOrdersForChef: (async (req, res) => {
@@ -587,7 +594,7 @@ module.exports = {
         //         error: true
         //     })
         // } else if (validatorResponse && validatorResponse.value) {
-        userHelper.viewOrdersServedHelper(requestData)
+        userHelper.viewOrdersServedHelper(requestData,orderListHelper)
             .then((response) => {
 
                 if (response) {

@@ -13,6 +13,8 @@ const bcrypt = require("bcrypt");
 const mongoose = require('mongoose');
 const Razorpay = require('razorpay');
 
+
+
 const razorpay = new Razorpay({
     key_id: 'rzp_test_fqGYcI1F5zA6Va',
     key_secret: 'nWo0nqR4Mr8lE39vmQR0KmIE'
@@ -437,12 +439,15 @@ module.exports = {
 
             const totalPrice = requestDataFormatted.quantity * foodItem.price;
 
-            const items = [{
-                foodId: requestDataFormatted.foodId,
-                foodName: foodItem.name,
-                quantity: requestDataFormatted.quantity,
-                price: foodItem.price
-            }];
+           
+                const items = [{
+                    foodId: requestDataFormatted.foodId,
+                    foodName: foodItem.name,
+                    quantity: requestDataFormatted.quantity,
+                    price: foodItem.price,
+                    totalPriceForItem: requestDataFormatted.quantity * foodItem.price 
+                }];
+                
 
             const newOrder = new orderDB({
                 tableId: requestDataFormatted.tableId,
@@ -588,14 +593,13 @@ module.exports = {
 
         });
     },
-    viewOrdersServedHelper: async (requestData) => {
+    viewOrdersServedHelper: async () => {
         return new Promise(async (resolve, reject) => {
             try {
                 const orders = await orderDB.find({ 'chefUpdates.status': "served" });
-               
-                
+    
                 const servedOrders = orders.filter(order => order.chefUpdates.some(update => update.status === "served"));
-                
+    
                 if (!servedOrders || servedOrders.length === 0) {
                     const response = {
                         success: true,
@@ -605,24 +609,32 @@ module.exports = {
                     return;
                 }
     
-                
                 const formattedOrders = await Promise.all(servedOrders.map(async order => {
-                   
                     const supplier = await supplierDB.findById(order.supplierId);
                     const supplierName = supplier ? supplier.name : "Unknown";
     
-                    const food = await foodDB.findById(order.items[0].foodId);
-                    const foodName = food ? food.name : "Unknown";
+                    const formattedItems = await Promise.all(order.items.map(async item => {
+                        const food = await foodDB.findById(item.foodId);
+                        const foodName = food ? food.name : "Unknown";
+                        return {
+                            foodId: item.foodId,
+                            foodName,
+                            quantity: item.quantity,
+                            price: item.price * item.quantity // Calculate price for each item based on quantity
+                        };
+                    }));
     
-               
+                    // Calculate total price
+                    const totalPrice = formattedItems.reduce((total, item) => total + item.price, 0);
+    
                     const table = await tableDB.findById(order.tableId);
                     const tableName = table ? table.name : "Unknown";
     
                     return {
                         supplierName,
-                        foodName,
                         tableName,
-                        
+                        items: formattedItems,
+                        totalPrice
                     };
                 }));
     
