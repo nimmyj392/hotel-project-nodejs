@@ -547,7 +547,7 @@ console.log("hello")
         const requestData = {
             orderId: req.body.orderId,
             status: req.body.status,
-            preparationTime: req.body.preparationTime
+     
         };
 
         const validatorResponse = await userDataValidator.updateStatusByChefValidator(requestData);

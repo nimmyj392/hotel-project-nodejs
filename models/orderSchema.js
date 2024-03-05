@@ -32,9 +32,7 @@ const orderSchema = new Schema({
     type: Date,
     default: Date.now
   },
-  preparationTime: {
-    type: String
-  },
+
   chefUpdates: [{
     status: {
       type: String,

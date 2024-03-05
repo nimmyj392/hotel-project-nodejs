@@ -169,8 +169,7 @@ function updateStatusByChefValidator(requestData) {
     try {
         const schema = Joi.object().keys({
             orderId: Joi.string().length(24).hex().required(),
-            status: Joi.string().required(),
-            preparationTime: Joi.string().required()
+            status: Joi.string().required()
         })
 
         const { error, value } = schema.validate(requestData);
