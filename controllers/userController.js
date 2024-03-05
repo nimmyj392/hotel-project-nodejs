@@ -455,7 +455,7 @@ module.exports = {
 
     }),
     orderList: (async (req, res) => {
-      
+      console.log("giiii")
         const requestDataArray = req.body; 
 console.log("requestArray",requestDataArray)
         console.log(typeof requestDataArray)
