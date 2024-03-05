@@ -480,13 +480,12 @@ module.exports = {
 
         });
     },
-
     getAllOrdersForChefHelper: (requestData) => {
         
         return new Promise(async (resolve, reject) => {
             try {
                 const orderList = await orderDB.find({ deleted: requestData.deleted });
-                console.log("frst", orderList)
+                
                 if (orderList.length === 0) {
                     const response = {
                         success: false,
@@ -501,6 +500,11 @@ module.exports = {
                     try {
                         const food = await foodDB.findById(order.items[0].foodId); 
                         order.foodName = food ? food.name : "Unknown";  
+    
+                      
+                        order.items.forEach(item => {
+                            item.foodName = order.foodName;
+                        });
                     } catch (error) {
                         console.log("Error fetching food:", error);
                         order.foodName = "Unknown";
@@ -512,6 +516,7 @@ module.exports = {
                     data: orderList.map(order => {
                         return {
                             _id: order._id,
+                            foodName: order.foodName,
                             tableId: order.tableId,
                             items: order.items,
                             supplierId: order.supplierId,
@@ -520,7 +525,7 @@ module.exports = {
                             deleted: order.deleted,
                             createdAt: order.createdAt,
                             __v: order.__v,
-                            foodName: order.foodName 
+                            
                         }
                     }),
                     error: false
@@ -537,6 +542,7 @@ module.exports = {
             }
         });
     },
+    
     
     
     

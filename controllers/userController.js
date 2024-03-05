@@ -455,7 +455,7 @@ module.exports = {
 
     }),
     orderList: (async (req, res) => {
-        
+        console.log("req",req)
         const requestDataArray = req.body; 
 
         
@@ -508,7 +508,7 @@ module.exports = {
     }),
 
     getAllOrdersForChef: (async (req, res) => {
-console.log("hello")
+
         const requestData = {
             deleted: false
         }
