@@ -50,7 +50,7 @@ async function editMyDishValidator(requestData) {
 
     try {
         const schema = Joi.object().keys({
-            dishId: Joi.string().length(24).hex().required(),
+            dishId: Joi.string().length(24).hex(),
             name: Joi.string(),
             description: Joi.string(),
             preparedBy: Joi.string().length(24).hex()
