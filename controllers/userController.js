@@ -454,58 +454,45 @@ module.exports = {
 
 
     }),
-    orderList: (async (req, res) => {
-      console.log("giiii")
-        const requestDataArray = req.body; 
-console.log("requestArray",requestDataArray)
-        console.log(typeof requestDataArray)
-        for (const requestData of requestDataArray) {
-            const requestDataFormatted = {
-                tableId: requestData.tableId,
-                foodId: requestData.foodId,
-                supplierId: req.userId,
-                quantity: requestData.quantity
-            };
-
-
-        // const validatorResponse = await userDataValidator.orderListValidator(requestDataFormatted);
-        // if (validatorResponse && validatorResponse.error) {
-        //     res.json({
-        //         isSuccess: false,
-        //         response: validatorResponse.error,
-        //         error: true
-        //     })
-        // } else if (validatorResponse && validatorResponse.value) {
-            userHelper.orderListHelper(requestDataFormatted).then((response) => {
-
-                if (response) {
+    orderList: async (req, res) => {
+        console.log("giiii")
+        const requestData = req.body; // Assuming requestData is the array you want to iterate over
+        console.log("requestArray", requestData);
+        console.log(typeof requestData);
+        
+        if (Array.isArray(requestData.selectedDishes)) {
+            for (const dish of requestData.selectedDishes) {
+                const requestDataFormatted = {
+                    tableId: requestData.tableId,
+                    foodId: dish.foodId,
+                    supplierId: req.userId,
+                    quantity: dish.quantity
+                };
+    
+                try {
+                    const response = await userHelper.orderListHelper(requestDataFormatted);
                     res.json({
-
                         isSuccess: true,
                         response: response,
                         error: false
-                    })
-                } else {
-
+                    });
+                } catch (error) {
                     res.json({
                         isSuccess: false,
                         response: {},
-                        error: response.data
-                    })
+                        error: error.message
+                    });
                 }
-            }).catch((response) => {
-                res.json({
-                    isSuccess: false,
-                    response: {},
-                    error: response.data
-                })
-
-
-            })
-        // }
-    }
-
-    }),
+            }
+        } else {
+            res.json({
+                isSuccess: false,
+                response: {},
+                error: "selectedDishes is not an array"
+            });
+        }
+    },
+    
 
     getAllOrdersForChef: (async (req, res) => {
 
