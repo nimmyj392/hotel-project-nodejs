@@ -439,6 +439,7 @@ module.exports = {
 
             const items = [{
                 foodId: requestDataFormatted.foodId,
+                foodName: foodItem.name,
                 quantity: requestDataFormatted.quantity,
                 price: foodItem.price
             }];
@@ -547,7 +548,8 @@ module.exports = {
 
 
         });
-    },viewOrdersServedHelper: async (requestData) => {
+    },
+    viewOrdersServedHelper: async (requestData) => {
         return new Promise(async (resolve, reject) => {
             try {
                 const orders = await orderDB.find({ 'chefUpdates.status': "served" });
