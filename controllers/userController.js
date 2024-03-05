@@ -456,48 +456,47 @@ module.exports = {
 
 
     }),
-    // Assuming middleware or function extracts supplierId from token and returns it
+   
 
 
-orderList: async (req, res) => {
-    console.log("giiii");
-    const requestData = req.body;
-    console.log("requestArray", requestData);
-    console.log(typeof requestData);
-
-    if (!Array.isArray(requestData)) {
-        res.json({
-            isSuccess: false,
-            response: {},
-            error: "Request data must be an array of objects"
-        });
-        return; // Exit the function if request data is not an array
-    }
-
-    try {
-        const responses = []; // Store individual responses for each order
-
-        // Inject extracted supplierId into each object
-        for (const orderData of requestData) {
-            orderData.supplierId = req.userId; // Assuming orderData is an object
-            const response = await userHelper.orderListHelper(orderData);
-            responses.push(response);
+    orderList: async (req, res) => {
+        try {
+            const requestData = req.body.selectedDishes; // Extract selectedDishes from request body
+            console.log("requestArray", requestData);
+            console.log(typeof requestData);
+    
+            if (!Array.isArray(requestData)) {
+                res.json({
+                    isSuccess: false,
+                    response: {},
+                    error: "Request data must be an array of objects"
+                });
+                return;
+            }
+    
+            const responses = [];
+    
+            for (const orderData of requestData) {
+                orderData.tableId = req.body.tableId; // Add tableId to orderData
+                orderData.supplierId = req.userId; // Assign supplierId from req.userId
+                const response = await userHelper.orderListHelper(orderData);
+                responses.push(response);
+            }
+    
+            res.json({
+                isSuccess: true,
+                response: responses,
+                error: false
+            });
+        } catch (error) {
+            res.json({
+                isSuccess: false,
+                response: {},
+                error: error.message
+            });
         }
-
-        res.json({
-            isSuccess: true,
-            response: responses, // Send an array of responses
-            error: false
-        });
-    } catch (error) {
-        res.json({
-            isSuccess: false,
-            response: {},
-            error: error.message
-        });
-    }
-},
-
+    },
+    
     
     
 
