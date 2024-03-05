@@ -481,32 +481,65 @@ module.exports = {
         });
     },
 
-
     getAllOrdersForChefHelper: (requestData) => {
+        
         return new Promise(async (resolve, reject) => {
-
-            const orderList = await orderDB.find({ deleted: requestData.deleted });
-
-            if (orderList.length === 0) {
+            try {
+                const orderList = await orderDB.find({ deleted: requestData.deleted });
+                console.log("frst", orderList)
+                if (orderList.length === 0) {
+                    const response = {
+                        success: false,
+                        data: "No orders found.",
+                        error: true
+                    };
+                    reject(response);
+                    return;
+                }
+    
+                for (let order of orderList) {
+                    try {
+                        const food = await foodDB.findById(order.items[0].foodId); 
+                        order.foodName = food ? food.name : "Unknown";  
+                    } catch (error) {
+                        console.log("Error fetching food:", error);
+                        order.foodName = "Unknown";
+                    }
+                }
+            
+                const response = {
+                    success: true,
+                    data: orderList.map(order => {
+                        return {
+                            _id: order._id,
+                            tableId: order.tableId,
+                            items: order.items,
+                            supplierId: order.supplierId,
+                            chefUpdates: order.chefUpdates,
+                            totalPrice: order.totalPrice,
+                            deleted: order.deleted,
+                            createdAt: order.createdAt,
+                            __v: order.__v,
+                            foodName: order.foodName 
+                        }
+                    }),
+                    error: false
+                };
+                resolve(response);
+            } catch (error) {
+                console.log(error)
                 const response = {
                     success: false,
-                    data: "No orders found."
+                    data: error,
+                    error: true
                 };
                 reject(response);
-                return;
             }
-
-            const response = {
-                success: true,
-                data: orderList
-            };
-            resolve(response);
-            return;
-
-
         });
     },
-
+    
+    
+    
     updateStatusByChefHelper: (requestData) => {
         return new Promise(async (resolve, reject) => {
 
@@ -554,7 +587,7 @@ module.exports = {
             try {
                 const orders = await orderDB.find({ 'chefUpdates.status': "served" });
                
-                // Filter out orders with status 'pending'
+                
                 const servedOrders = orders.filter(order => order.chefUpdates.some(update => update.status === "served"));
                 
                 if (!servedOrders || servedOrders.length === 0) {
@@ -566,9 +599,30 @@ module.exports = {
                     return;
                 }
     
+                
+                const formattedOrders = await Promise.all(servedOrders.map(async order => {
+                   
+                    const supplier = await supplierDB.findById(order.supplierId);
+                    const supplierName = supplier ? supplier.name : "Unknown";
+    
+                    const food = await foodDB.findById(order.items[0].foodId);
+                    const foodName = food ? food.name : "Unknown";
+    
+               
+                    const table = await tableDB.findById(order.tableId);
+                    const tableName = table ? table.name : "Unknown";
+    
+                    return {
+                        supplierName,
+                        foodName,
+                        tableName,
+                        
+                    };
+                }));
+    
                 const response = {
                     success: true,
-                    data: servedOrders
+                    data: formattedOrders
                 };
                 resolve(response);
     
@@ -581,6 +635,7 @@ module.exports = {
             }
         });
     },
+    
     
     
     viewOrdersPendingHelper: async (requestData) => {
