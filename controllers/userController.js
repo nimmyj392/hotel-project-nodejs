@@ -741,6 +741,7 @@ module.exports = {
     }),
     forgotPassword: async (req, res) => {
         try {
+            console.log("req :",req.body)
             const requestData = {
                 email: req.body.email,
                 password: req.body.password
