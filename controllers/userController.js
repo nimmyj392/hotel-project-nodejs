@@ -793,8 +793,9 @@ module.exports = {
     },
    verifyOTPAndStoreUser: async (req, res) => {
     const otp = req.body.otp;
+    console.log('body : ',req.body)
     const storedOTP = req.session.otp;
-    console.log(storedOTP);
+    console.log("storedOTP",storedOTP);
 
     if (otp != storedOTP) {
         return res.json({
