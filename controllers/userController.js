@@ -460,37 +460,22 @@ module.exports = {
 
     orderList: async (req, res) => {
         try {
-            console.log("Received request:", req);
+            console.log("Received request:", req.body);
     
-            const requestData = req.body.selectedDishes;
-    
-            if (!Array.isArray(requestData)) {
-                res.json({
-                    isSuccess: false,
-                    response: {},
-                    error: "Request data must be an array of objects"
-                });
-                return;
+            const requestData = {
+                selectedDishes : req.body.selectedDishes,
+                tableId : req.body.tableId,
+                supplierId: req.userId
             }
+            
+          
     
             const responses = [];
     
-            for (const orderData of requestData) {
-                // Client-side validation is recommended
-                if (typeof orderData.stock !== 'number' || isNaN(orderData.stock)) {
-                    console.error("Invalid stock value:", orderData.stock);
-                    // Handle invalid value (e.g., log error, reject request)
-                    continue; // Skip processing this order
-                }
-    
-                console.log("Processing orderData:", orderData);
-                console.log("Stock value (before conversion):", orderData.stock);
-    
-                orderData.stock = Number(orderData.stock);
-                console.log("Stock value (after conversion):", orderData.stock);
-    
-                orderData.tableId = req.body.tableId;
+            for (const orderData of requestData.selectedDishes) {
+                orderData.tableId = requestData.tableId;
                 orderData.supplierId = req.userId;
+              
     
                 const response = await userHelper.orderListHelper(orderData);
                 responses.push(response);
