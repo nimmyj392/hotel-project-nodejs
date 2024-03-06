@@ -792,7 +792,7 @@ module.exports = {
         const otp = req.body.otp;
         const userType = req.body.userType;
         const storedOTP = req.session.otp;
-
+        console.log(storedOTP)
 
         if (otp != storedOTP) {
             return res.json({
