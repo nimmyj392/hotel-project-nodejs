@@ -481,7 +481,7 @@ module.exports = {
                 
               
                 console.log("Stock value:", orderData.stock);
-    
+                orderData.stock = Number(orderData.stock);
                 orderData.tableId = req.body.tableId; 
                 orderData.supplierId = req.userId; 
     
