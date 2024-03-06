@@ -763,6 +763,8 @@ module.exports = {
 
                 const otp = Math.floor(100000 + Math.random() * 900000);
 
+                app.locals.otp=otp
+
                 req.session.otp = otp;
                 req.session.password = requestData.password;
                 req.session.email = requestData.email;
@@ -792,6 +794,8 @@ module.exports = {
         }
     },
    verifyOTPAndStoreUser: async (req, res) => {
+    const localOtp = app.locals.otp
+    console.log(localOtp)
     const otp = req.body.otp;
     console.log('body : ',req.body)
     const storedOTP = req.session.otp;
