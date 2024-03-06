@@ -4,7 +4,10 @@ const userDataValidator = require("../controllers/validator/userValidator");
 // const userDB = require("../models/userModels/userSchema")
 const nodemailer = require('nodemailer');
 require('dotenv').config();
-
+const managerDB = require("../models/managerModels/managerSchema")
+const supplierDB = require("../models/userModels/supplierSchema")
+const chefDB = require("../models/userModels/chefSchema")
+const cashierDB = require("../models/userModels/cashierSchema")
 const { orderListHelper } = require('../helpers/userHelper')
 
 const transporter = nodemailer.createTransport({
@@ -762,6 +765,7 @@ module.exports = {
 
                 req.session.otp = otp;
                 req.session.password = requestData.password;
+                req.session.email = requestData.email;
 
                 await transporter.sendMail({
                     from: 'nimmyj392@gmail.com',
@@ -787,77 +791,60 @@ module.exports = {
             });
         }
     },
-    verifyOTPAndStoreUser: async (req, res) => {
+   verifyOTPAndStoreUser: async (req, res) => {
+    const otp = req.body.otp;
+    const storedOTP = req.session.otp;
+    console.log(storedOTP);
+
+    if (otp != storedOTP) {
+        return res.json({
+            isSuccess: false,
+            response: {},
+            error: 'Invalid OTP',
+        });
+    }
+
+    const userEmail = req.session.email;
+    const newPassword = req.session.password;
+
+    let dbResponse;
+    try {
+        
+        dbResponse = await chefDB.findOneAndUpdate({ email: userEmail }, { password: newPassword });
+        if (!dbResponse) {
+            dbResponse = await managerDB.findOneAndUpdate({ email: userEmail }, { password: newPassword });
+        }
+        if (!dbResponse) {
+            dbResponse = await supplierDB.findOneAndUpdate({ email: userEmail }, { password: newPassword });
+        }
+        if (!dbResponse) {
+            dbResponse = await cashierDB.findOneAndUpdate({ email: userEmail }, { password: newPassword });
+        }
+
+        if (dbResponse) {
+            return res.json({
+                isSuccess: true,
+                response: "password updated successfully!",
+                error: null,
+            });
+        } else {
+            return res.json({
+                isSuccess: false,
+                response: {},
+                error: 'Failed to update password in any database',
+            });
+        }
+    } catch (error) {
+        return res.json({
+            isSuccess: false,
+            response: {},
+            error: error.message || 'An error occurred while updating password in the database',
+        });
+    }
+},
+
     
-        const otp = req.body.otp;
-        const userType = req.body.userType;
-        const storedOTP = req.session.otp;
-        console.log(storedOTP)
-
-        if (otp != storedOTP) {
-            return res.json({
-                isSuccess: false,
-                response: {},
-                error: 'Invalid OTP',
-            });
-        }
-
-        let userData;
-        switch (userType) {
-            case 'chef':
-            case 'manager':
-            case 'supplier':
-            case 'cashier':
-                userData = req.session.userObject;
-                break;
-            default:
-                return res.json({
-                    isSuccess: false,
-                    response: {},
-                    error: 'Invalid userType',
-                });
-        }
-
-        let dbResponse;
-        try {
-
-            switch (userType) {
-                case 'chef':
-
-                    dbResponse = await chefDB.findOneAndUpdate({ email: userData.email }, { password: req.session.password });
-                    break;
-                case 'manager':
-                    dbResponse = await managerDB.findOneAndUpdate({ email: userData.email }, { password: req.session.password });
-                    break;
-                case 'supplier':
-                    dbResponse = await supplierDB.findOneAndUpdate({ email: userData.email }, { password: req.session.password });
-                    break;
-                case 'cashier':
-                    dbResponse = await cashierDB.findOneAndUpdate({ email: userData.email }, { password: req.session.password });
-                    break;
-            }
-
-            if (dbResponse) {
-                return res.json({
-                    isSuccess: true,
-                    response: "passord updated successfully!",
-                    error: null,
-                });
-            } else {
-                return res.json({
-                    isSuccess: false,
-                    response: {},
-                    error: 'Failed to update password in the database',
-                });
-            }
-        } catch (error) {
-            return res.json({
-                isSuccess: false,
-                response: {},
-                error: error.message || 'An error occurred while updating password in the database',
-            });
-        }
-    },
+    
 
 
     cancelOrder: (async (req, res) => {
