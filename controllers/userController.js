@@ -461,9 +461,10 @@ module.exports = {
 
     orderList: async (req, res) => {
         try {
-            console.log("req",req)
+            console.log("Received request:", req);
+            
             const requestData = req.body.selectedDishes; 
-           
+            console.log("Received request data:", requestData);
     
             if (!Array.isArray(requestData)) {
                 res.json({
@@ -477,6 +478,8 @@ module.exports = {
             const responses = [];
     
             for (const orderData of requestData) {
+                console.log("Processing orderData:", orderData);
+                
                 orderData.tableId = req.body.tableId; 
                 orderData.supplierId = req.userId; 
                 const response = await userHelper.orderListHelper(orderData);
@@ -489,6 +492,7 @@ module.exports = {
                 error: false
             });
         } catch (error) {
+            console.error("Error occurred:", error);
             res.json({
                 isSuccess: false,
                 response: {},
@@ -496,7 +500,6 @@ module.exports = {
             });
         }
     },
-    
     
     
 
