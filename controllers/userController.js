@@ -461,9 +461,9 @@ module.exports = {
 
     orderList: async (req, res) => {
         try {
-            const requestData = req.body.selectedDishes; // Extract selectedDishes from request body
-            console.log("requestArray", requestData);
-            console.log(typeof requestData);
+            console.log("req",req)
+            const requestData = req.body.selectedDishes; 
+           
     
             if (!Array.isArray(requestData)) {
                 res.json({
@@ -477,8 +477,8 @@ module.exports = {
             const responses = [];
     
             for (const orderData of requestData) {
-                orderData.tableId = req.body.tableId; // Add tableId to orderData
-                orderData.supplierId = req.userId; // Assign supplierId from req.userId
+                orderData.tableId = req.body.tableId; 
+                orderData.supplierId = req.userId; 
                 const response = await userHelper.orderListHelper(orderData);
                 responses.push(response);
             }
