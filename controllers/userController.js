@@ -788,13 +788,13 @@ module.exports = {
         }
     },
     verifyOTPAndStoreUser: async (req, res) => {
-        console.log("otp", req.body)
+    
         const otp = req.body.otp;
         const userType = req.body.userType;
         const storedOTP = req.session.otp;
 
 
-        if (otp !== storedOTP) {
+        if (otp != storedOTP) {
             return res.json({
                 isSuccess: false,
                 response: {},
