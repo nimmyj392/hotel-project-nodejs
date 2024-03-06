@@ -31,8 +31,8 @@ router.get("/viewOrdersPending",verifyToken.verifyToken("supplier"),userControll
 router.post("/calculateBill",verifyToken.verifyToken("cashier"),userController.calculateBill)
 router.post("/collectPaymentByCash",verifyToken.verifyToken("cashier"),userController.collectPaymentByCash)
 router.post("/cancelOrder",verifyToken.verifyToken("supplier"),userController.cancelOrder)
-router.post("/forgotPassword",verifyToken.verifyToken("manager"),userController.forgotPassword) 
-router.post("/verifyOTPAndStoreUser",verifyToken.verifyToken("manager"),userController.verifyOTPAndStoreUser)
+router.post("/forgotPassword",userController.forgotPassword) 
+router.post("/verifyOtpAndStoreUser",verifyToken.verifyToken("manager"),userController.verifyOTPAndStoreUser)
 router.delete("/logOut",userController.logOut)
 
 module.exports = router

@@ -219,7 +219,15 @@ module.exports = {
                 resolve(response);
                 return;
             }
-
+            if (requestData.stock <= 0) {
+                const response = {
+                    isSuccess: false,
+                    data: "Stock value must be greater than zero",
+                    error: true
+                };
+                resolve(response);
+                return;
+            }
             let startTime, endTime;
 
             switch (requestData.category) {

@@ -467,7 +467,15 @@ module.exports = {
                 tableId : req.body.tableId,
                 supplierId: req.userId
             }
-        
+            const invalidOrder = requestData.selectedDishes.find(dish => !dish.quantity);
+            if (invalidOrder) {
+             
+                res.json({
+                    isSuccess: false,
+                    response: {},
+                    error: "Quantity is missing for a dish." 
+                });
+            }
     
             const responses = [];
     
