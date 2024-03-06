@@ -32,7 +32,7 @@ router.post("/calculateBill",verifyToken.verifyToken("cashier"),userController.c
 router.post("/collectPaymentByCash",verifyToken.verifyToken("cashier"),userController.collectPaymentByCash)
 router.post("/cancelOrder",verifyToken.verifyToken("supplier"),userController.cancelOrder)
 router.post("/forgotPassword",userController.forgotPassword) 
-router.post("/verifyOtpAndStoreUser",verifyToken.verifyToken("manager"),userController.verifyOTPAndStoreUser)
+router.post("/verifyOtpAndStoreUser",userController.verifyOTPAndStoreUser)
 router.delete("/logOut",userController.logOut)
 
 module.exports = router
