@@ -483,10 +483,7 @@ module.exports = {
                 console.log("Stock value:", orderData.stock);
                 orderData.stock = Number(orderData.stock);
                 orderData.tableId = req.body.tableId; 
-                orderData.supplierId = req.userId; 
-    
-                
-                console.log("Updated orderData:", orderData);
+                orderData.supplierId = req.userId;
     
                 const response = await userHelper.orderListHelper(orderData);
                 responses.push(response);
