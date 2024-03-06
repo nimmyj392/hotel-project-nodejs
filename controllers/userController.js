@@ -467,8 +467,7 @@ module.exports = {
                 tableId : req.body.tableId,
                 supplierId: req.userId
             }
-            
-          
+        
     
             const responses = [];
     
@@ -478,6 +477,7 @@ module.exports = {
               
     
                 const response = await userHelper.orderListHelper(orderData);
+                console.log("response",response)
                 responses.push(response);
             }
     
@@ -490,7 +490,7 @@ module.exports = {
             res.json({
                 isSuccess: false,
                 response: {},
-                error: error.message
+                error: error.data
             });
         }
     },

@@ -422,7 +422,8 @@ module.exports = {
             if (!foodItem) {
                 const response = {
                     success: false,
-                    data: "Food item not found."
+                    data: "Food item not found.",
+                    error:true
                 };
                 reject(response);
 
@@ -431,7 +432,8 @@ module.exports = {
             if (foodItem.stock < requestDataFormatted.quantity) {
                 const response = {
                     success: false,
-                    data: "Insufficient stock for the requested quantity."
+                    data: "Insufficient stock for the requested quantity.",
+                    error:true
                 };
                 reject(response);
 
@@ -463,7 +465,8 @@ module.exports = {
             if (!dbResponse) {
                 const response = {
                     success: false,
-                    data: "Failed to insert data into the database."
+                    data: "Failed to insert data into the database.",
+                    error:true
                 };
                 reject(response);
             } else {
@@ -479,7 +482,8 @@ module.exports = {
                             }))
                         },
                         totalPrice: totalPrice
-                    }
+                    },
+                    error:false
                 };
                 resolve(response)
             }
