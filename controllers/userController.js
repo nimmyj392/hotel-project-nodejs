@@ -458,12 +458,11 @@ module.exports = {
     }),
    
 
-
     orderList: async (req, res) => {
         try {
             console.log("Received request:", req);
     
-            const requestData = req.body.selectedDishes; 
+            const requestData = req.body.selectedDishes;
     
             if (!Array.isArray(requestData)) {
                 res.json({
@@ -477,12 +476,20 @@ module.exports = {
             const responses = [];
     
             for (const orderData of requestData) {
+                // Client-side validation is recommended
+                if (typeof orderData.stock !== 'number' || isNaN(orderData.stock)) {
+                    console.error("Invalid stock value:", orderData.stock);
+                    // Handle invalid value (e.g., log error, reject request)
+                    continue; // Skip processing this order
+                }
+    
                 console.log("Processing orderData:", orderData);
-                
-              
-                console.log("Stock value:", orderData.stock);
+                console.log("Stock value (before conversion):", orderData.stock);
+    
                 orderData.stock = Number(orderData.stock);
-                orderData.tableId = req.body.tableId; 
+                console.log("Stock value (after conversion):", orderData.stock);
+    
+                orderData.tableId = req.body.tableId;
                 orderData.supplierId = req.userId;
     
                 const response = await userHelper.orderListHelper(orderData);
@@ -502,6 +509,7 @@ module.exports = {
             });
         }
     },
+    
     
     
     
