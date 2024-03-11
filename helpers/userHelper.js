@@ -33,12 +33,13 @@ module.exports = {
     addFoodByChefHelper: (requestData) => {
         return new Promise(async (resolve, reject) => {
 
-            if (!requestData.name || !requestData.description || !requestData.category ) {
+            if (!requestData.name || !requestData.description || !requestData.category) {
                 const response = {
                     success: false,
 
                     data: "missing required fields",
-                    error:true}
+                    error: true
+                }
                 reject(response);
             }
 
@@ -49,7 +50,7 @@ module.exports = {
                 const response = {
                     success: false,
                     data: "Food with this name already exists.",
-                    error:true
+                    error: true
                 };
                 reject(response);
             } else {
@@ -67,7 +68,7 @@ module.exports = {
                     const response = {
                         success: false,
                         message: "Failed to insert food into the database.",
-                        error:true
+                        error: true
                     };
                     resolve(response);
                 } else {
@@ -269,7 +270,7 @@ module.exports = {
                     resolve(response);
                     return;
                 }
-              
+
 
                 const todaysMenu = new todaysMenuDB({
                     foodId: requestData.dishId,
@@ -430,27 +431,27 @@ module.exports = {
     },
 
     orderListHelper: (requestDataFormatted) => {
-    
-        console.log("requestDataFormattedx",requestDataFormatted)
+
+        console.log("requestDataFormattedx", requestDataFormatted)
         return new Promise(async (resolve, reject) => {
 
-            const foodItem = await todaysMenuDB.findOne({ foodId:requestDataFormatted.foodId });
-            console.log("fooditem",foodItem)
+            const foodItem = await todaysMenuDB.findOne({ foodId: requestDataFormatted.foodId });
+            console.log("fooditem", foodItem)
             if (!foodItem) {
                 const response = {
                     success: false,
                     data: "Food item not found.",
-                    error:true
+                    error: true
                 };
                 reject(response);
 
             }
-
+console.log('stock',foodItem.stock)
             if (foodItem.stock < requestDataFormatted.quantity) {
                 const response = {
                     success: false,
                     data: "Insufficient stock for the requested quantity.",
-                    error:true
+                    error: true
                 };
                 reject(response);
 
@@ -460,15 +461,15 @@ module.exports = {
 
             const totalPrice = requestDataFormatted.quantity * foodItem.price;
 
-           
-                const items = [{
-                    foodId: requestDataFormatted.foodId,
-                    foodName: foodItem.name,
-                    quantity: requestDataFormatted.quantity,
-                    price: foodItem.price,
-                    totalPriceForItem: requestDataFormatted.quantity * foodItem.price 
-                }];
-                
+
+            const items = [{
+                foodId: requestDataFormatted.foodId,
+                foodName: foodItem.name,
+                quantity: requestDataFormatted.quantity,
+                price: foodItem.price,
+                totalPriceForItem: requestDataFormatted.quantity * foodItem.price
+            }];
+
 
             const newOrder = new orderDB({
                 tableId: requestDataFormatted.tableId,
@@ -483,7 +484,7 @@ module.exports = {
                 const response = {
                     success: false,
                     data: "Failed to insert data into the database.",
-                    error:true
+                    error: true
                 };
                 reject(response);
             } else {
@@ -495,12 +496,12 @@ module.exports = {
                             ...dbResponse.toObject(),
                             items: dbResponse.items.map(item => ({
                                 ...item.toObject(),
-                                itemPrice: item.quantity * item.price 
+                                itemPrice: item.quantity * item.price
                             }))
                         },
                         totalPrice: totalPrice
                     },
-                    error:false
+                    error: false
                 };
                 resolve(response)
             }
@@ -509,11 +510,11 @@ module.exports = {
         });
     },
     getAllOrdersForChefHelper: (requestData) => {
-        
+
         return new Promise(async (resolve, reject) => {
             try {
                 const orderList = await orderDB.find({ deleted: requestData.deleted });
-                
+
                 if (orderList.length === 0) {
                     const response = {
                         success: false,
@@ -523,13 +524,13 @@ module.exports = {
                     reject(response);
                     return;
                 }
-    
+
                 for (let order of orderList) {
                     try {
-                        const food = await foodDB.findById(order.items[0].foodId); 
-                        order.foodName = food ? food.name : "Unknown";  
-    
-                      
+                        const food = await foodDB.findById(order.items[0].foodId);
+                        order.foodName = food ? food.name : "Unknown";
+
+
                         order.items.forEach(item => {
                             item.foodName = order.foodName;
                         });
@@ -538,7 +539,7 @@ module.exports = {
                         order.foodName = "Unknown";
                     }
                 }
-            
+
                 const response = {
                     success: true,
                     data: orderList.map(order => {
@@ -553,7 +554,7 @@ module.exports = {
                             deleted: order.deleted,
                             createdAt: order.createdAt,
                             __v: order.__v,
-                            
+
                         }
                     }),
                     error: false
@@ -570,10 +571,10 @@ module.exports = {
             }
         });
     },
-    
-    
-    
-    
+
+
+
+
     updateStatusByChefHelper: (requestData) => {
         return new Promise(async (resolve, reject) => {
 
@@ -620,9 +621,9 @@ module.exports = {
         return new Promise(async (resolve, reject) => {
             try {
                 const orders = await orderDB.find({ 'chefUpdates.status': "served" });
-    
+
                 const servedOrders = orders.filter(order => order.chefUpdates.some(update => update.status === "served"));
-    
+
                 if (!servedOrders || servedOrders.length === 0) {
                     const response = {
                         success: true,
@@ -631,11 +632,11 @@ module.exports = {
                     resolve(response);
                     return;
                 }
-    
+
                 const formattedOrders = await Promise.all(servedOrders.map(async order => {
                     const supplier = await supplierDB.findById(order.supplierId);
                     const supplierName = supplier ? supplier.name : "Unknown";
-    
+
                     const formattedItems = await Promise.all(order.items.map(async item => {
                         const food = await foodDB.findById(item.foodId);
                         const foodName = food ? food.name : "Unknown";
@@ -646,13 +647,13 @@ module.exports = {
                             price: item.price * item.quantity // Calculate price for each item based on quantity
                         };
                     }));
-    
+
                     // Calculate total price
                     const totalPrice = formattedItems.reduce((total, item) => total + item.price, 0);
-    
+
                     const table = await tableDB.findById(order.tableId);
                     const tableName = table ? table.name : "Unknown";
-    
+
                     return {
                         supplierName,
                         tableName,
@@ -660,13 +661,13 @@ module.exports = {
                         totalPrice
                     };
                 }));
-    
+
                 const response = {
                     success: true,
                     data: formattedOrders
                 };
                 resolve(response);
-    
+
             } catch (error) {
                 const response = {
                     success: false,
@@ -676,9 +677,9 @@ module.exports = {
             }
         });
     },
-    
-    
-    
+
+
+
     viewOrdersPendingHelper: async (requestData) => {
         return new Promise(async (resolve, reject) => {
 
@@ -709,15 +710,15 @@ module.exports = {
         return new Promise(async (resolve, reject) => {
             try {
                 const order = await orderDB.findOne({ 'chefUpdates.status': 'served' }).sort({ createdAt: -1 });
-    
+
                 if (!order) {
                     const response = { success: false, data: "No served orders found." };
                     resolve(response);
                     return;
                 }
-    
+
                 const totalBillAmount = order.totalPrice;
-                
+
                 if (totalBillAmount < 1) {
                     const response = { success: false, data: "Total bill amount must be at least INR 1.00" };
                     resolve(response);
@@ -732,13 +733,13 @@ module.exports = {
                         payment_capture: '1'
                     });
                 } catch (razorpayError) {
-                    
+
                     console.error('Razorpay error:', razorpayError);
                     const response = { success: false, data: "Error creating Razorpay order." };
                     resolve(response);
                     return;
                 }
-    
+
                 let unpaidItem;
                 for (let i = order.items.length - 1; i >= 0; i--) {
                     if (!order.items[i].paid) {
@@ -746,13 +747,13 @@ module.exports = {
                         break;
                     }
                 }
-    
+
                 if (!unpaidItem) {
                     const response = { success: false, data: "No unpaid items found in the order." };
                     resolve(response);
                     return;
                 }
-    
+
                 const payment = new paymentDB({
                     orderId: order._id,
                     totalAmount: totalBillAmount,
@@ -761,11 +762,11 @@ module.exports = {
                     receipt: razorpayOrder.id,
                     dishId: unpaidItem.foodId
                 });
-    
+
                 await payment.save();
                 unpaidItem.paid = true;
                 await order.save();
-    
+
                 const response = {
                     success: true,
                     data: "Bill calculated successfully.",
@@ -784,7 +785,7 @@ module.exports = {
             }
         });
     },
-    
+
 
 
 
@@ -794,7 +795,7 @@ module.exports = {
             const order = await orderDB.findOne({ 'chefUpdates.status': 'served' }).sort({ createdAt: -1 });
 
             if (!order) {
-                const response = { success: false, data: "No served orders found.",error:true };
+                const response = { success: false, data: "No served orders found.", error: true };
                 reject(response);
 
             }
@@ -807,9 +808,9 @@ module.exports = {
                 }
             }
 
-console.log(unpaidItem)
+            console.log(unpaidItem)
             if (!unpaidItem) {
-                const response = { success: false, data: "No unpaid items found in the order.", else:false };
+                const response = { success: false, data: "No unpaid items found in the order.", else: false };
                 reject(response);
                 return;
             }
@@ -832,7 +833,7 @@ console.log(unpaidItem)
             unpaidItem.paid = true;
             await order.save();
 
-            const response = { success: true, data: "Payment received in cash. Order marked as paid.",else:false };
+            const response = { success: true, data: "Payment received in cash. Order marked as paid.", else: false };
             resolve(response);
 
         });
@@ -868,111 +869,111 @@ console.log(unpaidItem)
         });
 
     },
-    forgotPasswordHelper: async(requestData)=> {
+    forgotPasswordHelper: async (requestData) => {
         return new Promise(async (resolve, reject) => {
-        try {
-            const userExists = {
-                chef: await chefDB.exists({ email: requestData.email }),
-                supplier: await supplierDB.exists({ email: requestData.email }),
-                manager: await managerDB.exists({ email: requestData.email }),
-                cashier: await cashierDB.exists({ email: requestData.email })
-            };
+            try {
+                const userExists = {
+                    chef: await chefDB.exists({ email: requestData.email }),
+                    supplier: await supplierDB.exists({ email: requestData.email }),
+                    manager: await managerDB.exists({ email: requestData.email }),
+                    cashier: await cashierDB.exists({ email: requestData.email })
+                };
 
-            
-            if (!Object.values(userExists).some(exists => exists)) {
-                const response = { success: false, data: "User not found.", error: true }
 
+                if (!Object.values(userExists).some(exists => exists)) {
+                    const response = { success: false, data: "User not found.", error: true }
+
+                    resolve(response)
+                }
+                const otp = Math.floor(100000 + Math.random() * 900000);
+                await otpDB.create({ email: requestData.email, otp: otp });
+
+                await transporter.sendMail({
+                    from: 'nimmyj392@gmail.com',
+                    to: requestData.email,
+                    subject: 'OTP for Account Verification',
+                    text: `Your OTP (One Time Password) is: ${otp}. Please use this OTP to verify your account.`
+                });
+
+                console.log('OTP sent to email:', requestData.email);
+
+                const response = { success: true, data: "Otp sent successfully", error: false }
                 resolve(response)
+            } catch (error) {
+                console.error('Error sending OTP:', error);
+                const response = { success: false, data: "Error sending otp", error: true }
+                reject(response)
             }
-            const otp = Math.floor(100000 + Math.random() * 900000);
-            await otpDB.create({ email: requestData.email, otp: otp });
-            
-            await transporter.sendMail({
-                from: 'nimmyj392@gmail.com',
-                to: requestData.email,
-                subject: 'OTP for Account Verification',
-                text: `Your OTP (One Time Password) is: ${otp}. Please use this OTP to verify your account.`
-            });
-    
-            console.log('OTP sent to email:', requestData.email);
-    
-            const response = { success: true, data: "Otp sent successfully", error: false}
-            resolve(response)
-        } catch (error) {
-            console.error('Error sending OTP:', error);
-            const response = { success: false, data: "Error sending otp", error: true }
-            reject(response)
-        }
         })
     },
-     verifyOTPHelper: async(requestData) =>{
+    verifyOTPHelper: async (requestData) => {
         return new Promise(async (resolve, reject) => {
-        try {
-            const otpDocument = await otpDB.findOne({ email: requestData.email }).sort({ createdAt: -1 });
-    
-            if (!otpDocument) {
-                const response = { success: false, data: "Document not found", error: true }
+            try {
+                const otpDocument = await otpDB.findOne({ email: requestData.email }).sort({ createdAt: -1 });
+
+                if (!otpDocument) {
+                    const response = { success: false, data: "Document not found", error: true }
+                    reject(response)
+                }
+
+                if (otpDocument.otp !== requestData.otp) {
+                    const response = { success: false, data: "Invalid otp", error: true }
+                    reject(response)
+                }
+
+
+                const response = { success: true, data: "Otp verified successfully!", error: false }
+                resolve(response)
+            } catch (error) {
+                console.error('Error verifying OTP:', error);
+                const response = { success: false, data: "Error verifying otp", error: true }
                 reject(response)
             }
-    
-            if (otpDocument.otp !== requestData.otp) {
-                const response = { success: false, data: "Invalid otp", error: true }
-                reject(response)
-            }
-    
-           
-            const response = { success: true, data: "Otp verified successfully!", error: false}
-            resolve(response)
-        } catch (error) {
-            console.error('Error verifying OTP:', error);
-            const response = { success: false, data: "Error verifying otp", error: true }
-                reject(response)
-            }
-    
-        
+
+
         })
     },
-    
-storeNewPasswordHelper:async(requestData)=> {
-    return new Promise(async (resolve, reject) => {
-      
-    try {
-        let userModel;
 
-        if (await chefDB.exists({ email: requestData.email })) {
-            userModel = chefDB;
-        } else if (await supplierDB.exists({ email: requestData.email })) {
-            userModel = supplierDB;
-        } else if (await managerDB.exists({ email: requestData.email })) {
-            userModel = managerDB;
-        } else if (await cashierDB.exists({ email: requestData.email })) {
-            userModel = cashierDB;
-        } else {
-            const response = { success: false, data: "User not found", error: true }
+    storeNewPasswordHelper: async (requestData) => {
+        return new Promise(async (resolve, reject) => {
+
+            try {
+                let userModel;
+
+                if (await chefDB.exists({ email: requestData.email })) {
+                    userModel = chefDB;
+                } else if (await supplierDB.exists({ email: requestData.email })) {
+                    userModel = supplierDB;
+                } else if (await managerDB.exists({ email: requestData.email })) {
+                    userModel = managerDB;
+                } else if (await cashierDB.exists({ email: requestData.email })) {
+                    userModel = cashierDB;
+                } else {
+                    const response = { success: false, data: "User not found", error: true }
+                    reject(response)
+                }
+
+                const user = await userModel.findOne({ email: requestData.email });
+                if (user) {
+                    const hashedPassword = await bcrypt.hash(requestData.newPassword, 10);
+                    user.password = hashedPassword;
+
+                    await user.save();
+                    const response = { success: true, data: "Password updated", error: false }
+                    resolve(response)
+
+                } else {
+                    const response = { success: false, data: "User not found", error: true }
+                    reject(response)
+
+                }
+            } catch (error) {
+                console.error('Error storing new password:', error);
+                const response = { success: false, data: "Error storing new password", error: true }
                 reject(response)
             }
-    
-        const user = await userModel.findOne({ email: requestData.email });
-        if (user) {
-            const hashedPassword = await bcrypt.hash(requestData.newPassword, 10);
-            user.password = hashedPassword;
-          
-            await user.save();
-            const response = { success: true, data: "Password updated", error: false}
-            resolve(response)
-        
-        } else {
-            const response = { success: false, data: "User not found", error: true }
-            reject(response)
-        
-        }
-    } catch (error) {
-        console.error('Error storing new password:', error);
-        const response = { success: false, data: "Error storing new password", error: true }
-        reject(response)
-    }
-    })
-},
+        })
+    },
 
     cancelOrderHelper: async (requestData) => {
         return new Promise(async (resolve, reject) => {
@@ -1047,7 +1048,7 @@ storeNewPasswordHelper:async(requestData)=> {
                 UserDB = cashierDB;
                 break;
             default:
-                return { success: false, data: "Invalid user type" ,error:true};
+                return { success: false, data: "Invalid user type", error: true };
         }
 
 
@@ -1070,7 +1071,7 @@ storeNewPasswordHelper:async(requestData)=> {
 
         await user.save();
 
-        const response = { success: true, data: "Logout successfull" ,error:false};
+        const response = { success: true, data: "Logout successfull", error: false };
         resolve(response)
 
     }

@@ -100,7 +100,7 @@ module.exports = {
                 console.error('Error fetching dish', error);
                 res.json({
                     isSuccess: false,
-                    response:{} ,
+                    response: {},
                     error: error.data
                 });
             });
@@ -108,7 +108,7 @@ module.exports = {
     }),
 
     editMyDish: (async (req, res) => {
-        console.log("req",req)
+        console.log("req", req)
         const requestData = {
             dishId: req.body.dishId,
             name: req.body.name,
@@ -185,8 +185,8 @@ module.exports = {
             }).catch((error) => {
                 res.json({
                     isSuccess: false,
-                    response:{},
-                    error:  error.data
+                    response: {},
+                    error: error.data
                 })
 
 
@@ -229,39 +229,39 @@ module.exports = {
 
 
     addTodaysMenu: (async (req, res) => {
-        const requestDataArray = Array.isArray(req.body) ? req.body : [req.body]; 
-    
+        const requestDataArray = Array.isArray(req.body) ? req.body : [req.body];
+
         const responses = [];
-    
+
         for (const requestData of requestDataArray) {
-          
-                try {
-                    
-                    const response = await userHelper.addTodaysMenuHelper(requestData);
-    
-                    if (response) {
-                        responses.push({
-                            isSuccess: true,
-                            response: response.data,
-                            error: false
-                        });
-                    } else {
-                        responses.push({
-                            isSuccess: false,
-                            response: {},
-                            error: response.data
-                        });
-                    }
-                } catch (error) {
+
+            try {
+
+                const response = await userHelper.addTodaysMenuHelper(requestData);
+
+                if (response) {
+                    responses.push({
+                        isSuccess: true,
+                        response: response.data,
+                        error: false
+                    });
+                } else {
                     responses.push({
                         isSuccess: false,
                         response: {},
-                        error: error.data
+                        error: response.data
                     });
                 }
+            } catch (error) {
+                responses.push({
+                    isSuccess: false,
+                    response: {},
+                    error: error.data
+                });
+            }
             // }
         }
-    
+
         res.json(responses);
     }),
     deleteMenuItem: (async (req, res) => {
@@ -463,39 +463,39 @@ module.exports = {
 
 
     }),
-   
+
 
     orderList: async (req, res) => {
         try {
             console.log("Received request:", req.body);
-    
+
             const requestData = {
-                selectedDishes : req.body.selectedDishes,
-                tableId : req.body.tableId,
+                selectedDishes: req.body.selectedDishes,
+                tableId: req.body.tableId,
                 supplierId: req.userId
             }
             const invalidOrder = requestData.selectedDishes.find(dish => !dish.quantity);
             if (invalidOrder) {
-             
+
                 res.json({
                     isSuccess: false,
                     response: {},
-                    error: "Quantity is missing for a dish." 
+                    error: "Quantity is missing for a dish."
                 });
             }
-    
+
             const responses = [];
-    
+
             for (const orderData of requestData.selectedDishes) {
                 orderData.tableId = requestData.tableId;
                 orderData.supplierId = req.userId;
-              
-    
+
+
                 const response = await userHelper.orderListHelper(orderData);
-                console.log("response",response)
+                console.log("response", response)
                 responses.push(response);
             }
-    
+
             res.json({
                 isSuccess: true,
                 response: responses,
@@ -509,10 +509,10 @@ module.exports = {
             });
         }
     },
-    
-    
-    
-    
+
+
+
+
 
     getAllOrdersForChef: (async (req, res) => {
 
@@ -554,7 +554,7 @@ module.exports = {
         const requestData = {
             orderId: req.body.orderId,
             status: req.body.status,
-     
+
         };
 
         const validatorResponse = await userDataValidator.updateStatusByChefValidator(requestData);
@@ -607,7 +607,7 @@ module.exports = {
         //         error: true
         //     })
         // } else if (validatorResponse && validatorResponse.value) {
-        userHelper.viewOrdersServedHelper(requestData,orderListHelper)
+        userHelper.viewOrdersServedHelper(requestData, orderListHelper)
             .then((response) => {
 
                 if (response) {
@@ -731,7 +731,7 @@ module.exports = {
 
                     res.json({
                         isSuccess: false,
-                        response:{} ,
+                        response: {},
                         error: response.data
                     })
                 }
@@ -750,10 +750,10 @@ module.exports = {
         const requestData = {
             email: req.body.email
         };
-    
+
         try {
             const validatorResponse = await userDataValidator.forgotPasswordValidator(requestData);
-    
+
             if (validatorResponse && validatorResponse.error) {
                 return res.json({
                     isSuccess: false,
@@ -792,113 +792,103 @@ module.exports = {
             });
         }
     },
-    
-    
-    
 
-verifyOTPAndStoreUser: async (req, res) => {
-    const requestData = {
-        email: req.body.email,
-        otp: req.body.otp
-    };
 
-    try {
-        const validatorResponse = await userDataValidator.verifyOTPAndStoreUserValidator(requestData);
 
-        if (validatorResponse && validatorResponse.error) {
-            return res.json({
-                isSuccess: false,
-                response: {},
-                error: validatorResponse.error
-            });
-        } else if (validatorResponse && validatorResponse.value) {
-            userHelper.verifyOTPHelper(requestData).then((response) => {
-                if (response.success) {
-                    return res.json({
-                        isSuccess: true,
-                        response: response.data,
-                        error: false
-                    });
-                } else {
+
+    verifyOTPAndStoreUser: async (req, res) => {
+        const requestData = {
+            email: req.body.email,
+            otp: req.body.otp
+        };
+
+        try {
+            const validatorResponse = await userDataValidator.verifyOTPAndStoreUserValidator(requestData);
+
+            if (validatorResponse && validatorResponse.error) {
+                return res.json({
+                    isSuccess: false,
+                    response: {},
+                    error: validatorResponse.error
+                });
+            } else if (validatorResponse && validatorResponse.value) {
+                userHelper.verifyOTPHelper(requestData).then((response) => {
+                    if (response.success) {
+                        return res.json({
+                            isSuccess: true,
+                            response: response.data,
+                            error: false
+                        });
+                    } else {
+                        return res.json({
+                            isSuccess: false,
+                            response: {},
+                            error: response.data
+                        });
+                    }
+                }).catch((response) => {
                     return res.json({
                         isSuccess: false,
                         response: {},
                         error: response.data
                     });
-                }
-            }).catch((response) => {
+                });
+            }
+        } catch (error) {
+            console.error('Error verifying OTP:', error);
+            return res.json({
+                isSuccess: false,
+                response: {},
+                error: "Error verifying OTP"
+            });
+        }
+    },
+    storeNewPassword: async (req, res) => {
+        try {
+
+            const requestData = {
+                email: req.body.email,
+                otp: req.body.otp,
+                newPassword: req.body.newPassword
+            };
+
+
+            const otpDocument = await otpDB.findOne({ email: requestData.email }).sort({ createdAt: -1 });
+            if (!otpDocument) {
                 return res.json({
                     isSuccess: false,
                     response: {},
-                    error: response.data
+                    error: 'Document not found or expired'
                 });
+            }
+
+            if (otpDocument.otp !== requestData.otp) {
+                return res.json({
+                    isSuccess: false,
+                    response: {},
+                    error: 'Invalid OTP'
+                });
+            }
+
+            await otpDB.deleteOne({ _id: otpDocument._id });
+
+
+            const response = await userHelper.storeNewPasswordHelper(requestData);
+
+            return res.json({
+                isSuccess: response.success,
+                response: response.data,
+                error: response.error
             });
-        }
-    } catch (error) {
-        console.error('Error verifying OTP:', error);
-        return res.json({
-            isSuccess: false,
-            response: {},
-            error: "Error verifying OTP"
-        });
-    }
-},
-storeNewPassword :async (req, res) => {
-    try {
-
-        const requestData = {
-            email: req.body.email,
-            otp: req.body.otp,
-            newPassword:req.body.newPassword
-        };
-
-        
-        // const validationResponse = await userDataValidator.storeNewPasswordValidator(requestData);
-        // if (!validationResponse.success) {
-        //     return res.json({
-        //         isSuccess: false,
-        //         response: {},
-        //         error: "error in validation"
-        //     });
-        // }
-// console.log("val",validationResponse)
-        
-        const otpDocument = await otpDB.findOne({ email: requestData.email }).sort({ createdAt: -1 });
-        if (!otpDocument) {
+        } catch (error) {
+            console.error('Error storing new password:', error);
             return res.json({
                 isSuccess: false,
                 response: {},
-                error: 'Document not found or expired'
+                error: "Error storing new password"
             });
         }
-
-        if (otpDocument.otp !== requestData.otp) {
-            return res.json({
-                isSuccess: false,
-                response: {},
-                error: 'Invalid OTP'
-            });
-        }
-
-        await otpDB.deleteOne({ _id: otpDocument._id });
-
-     
-        const response = await userHelper.storeNewPasswordHelper(requestData);
-
-        return res.json({
-            isSuccess: response.success,
-            response: response.data,
-            error: response.error
-        });
-    } catch (error) {
-        console.error('Error storing new password:', error);
-        return res.json({
-            isSuccess: false,
-            response: {},
-            error: "Error storing new password"
-        });
-    }
-},
+    },
 
     cancelOrder: (async (req, res) => {
         const requestData = {
