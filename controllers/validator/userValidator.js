@@ -214,7 +214,7 @@ function forgotPasswordValidator(requestData) {
     try {
         const schema = Joi.object().keys({
             email: Joi.string().required(),
-            password: Joi.string().required()
+           
         })
 
         const { error, value } = schema.validate(requestData);
@@ -231,7 +231,51 @@ function forgotPasswordValidator(requestData) {
 
     }
 }
+function    verifyOTPAndStoreUserValidator(requestData) {
 
+    try {
+        const schema = Joi.object().keys({
+            email: Joi.string().required(),
+            otp: Joi.string().required(),
+        })
+
+        const { error, value } = schema.validate(requestData);
+
+        if (error) {
+            return { error: error.details.map((x) => x.message).join(", ") };
+        } else if (value) {
+            return { value: value };
+        } else {
+            return { error: "something went wrong!!" }
+        }
+
+    } catch (exception) {
+
+    }
+}
+function    storeNewPasswordValidator(requestData) {
+
+    try {
+        const schema = Joi.object().keys({
+            email: Joi.string().required(),
+            otp: Joi.string().required(),
+            newPassword: Joi.string().required(),
+        })
+
+        const { error, value } = schema.validate(requestData);
+
+        if (error) {
+            return { error: error.details.map((x) => x.message).join(", ") };
+        } else if (value) {
+            return { value: value };
+        } else {
+            return { error: "something went wrong!!" }
+        }
+
+    } catch (exception) {
+
+    }
+}
 
 function cancelOrderValidator(requestData) {
 
@@ -289,5 +333,7 @@ module.exports = {
     logOutValidator,
     //    calculateBillValidator
     forgotPasswordValidator,
-    cancelOrderValidator
+    cancelOrderValidator,
+    verifyOTPAndStoreUserValidator,
+    storeNewPasswordValidator
 }

@@ -12,8 +12,17 @@ const paymentDB = require("../models/paymentSchema")
 const bcrypt = require("bcrypt");
 const mongoose = require('mongoose');
 const Razorpay = require('razorpay');
+const otpDB = require("../models/otpSchema")
+const nodemailer = require('nodemailer');
+require('dotenv').config();
 
-
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    }
+});
 
 const razorpay = new Razorpay({
     key_id: 'rzp_test_fqGYcI1F5zA6Va',
@@ -859,6 +868,112 @@ console.log(unpaidItem)
         });
 
     },
+    forgotPasswordHelper: async(requestData)=> {
+        return new Promise(async (resolve, reject) => {
+        try {
+            const userExists = {
+                chef: await chefDB.exists({ email: requestData.email }),
+                supplier: await supplierDB.exists({ email: requestData.email }),
+                manager: await managerDB.exists({ email: requestData.email }),
+                cashier: await cashierDB.exists({ email: requestData.email })
+            };
+
+            
+            if (!Object.values(userExists).some(exists => exists)) {
+                const response = { success: false, data: "User not found.", error: true }
+
+                resolve(response)
+            }
+            const otp = Math.floor(100000 + Math.random() * 900000);
+            await otpDB.create({ email: requestData.email, otp: otp });
+            
+            await transporter.sendMail({
+                from: 'nimmyj392@gmail.com',
+                to: requestData.email,
+                subject: 'OTP for Account Verification',
+                text: `Your OTP (One Time Password) is: ${otp}. Please use this OTP to verify your account.`
+            });
+    
+            console.log('OTP sent to email:', requestData.email);
+    
+            const response = { success: true, data: "Otp sent successfully", error: false}
+            resolve(response)
+        } catch (error) {
+            console.error('Error sending OTP:', error);
+            const response = { success: false, data: "Error sending otp", error: true }
+            reject(response)
+        }
+        })
+    },
+     verifyOTPHelper: async(requestData) =>{
+        return new Promise(async (resolve, reject) => {
+        try {
+            const otpDocument = await otpDB.findOne({ email: requestData.email }).sort({ createdAt: -1 });
+    
+            if (!otpDocument) {
+                const response = { success: false, data: "Document not found", error: true }
+                reject(response)
+            }
+    
+            if (otpDocument.otp !== requestData.otp) {
+                const response = { success: false, data: "Invalid otp", error: true }
+                reject(response)
+            }
+    
+           
+            const response = { success: true, data: "Otp verified successfully!", error: false}
+            resolve(response)
+        } catch (error) {
+            console.error('Error verifying OTP:', error);
+            const response = { success: false, data: "Error verifying otp", error: true }
+                reject(response)
+            }
+    
+        
+        })
+    },
+    
+storeNewPasswordHelper:async(requestData)=> {
+    return new Promise(async (resolve, reject) => {
+      
+    try {
+        let userModel;
+
+        if (await chefDB.exists({ email: requestData.email })) {
+            userModel = chefDB;
+        } else if (await supplierDB.exists({ email: requestData.email })) {
+            userModel = supplierDB;
+        } else if (await managerDB.exists({ email: requestData.email })) {
+            userModel = managerDB;
+        } else if (await cashierDB.exists({ email: requestData.email })) {
+            userModel = cashierDB;
+        } else {
+            const response = { success: false, data: "User not found", error: true }
+                reject(response)
+            }
+    
+        const user = await userModel.findOne({ email: requestData.email });
+        if (user) {
+            const hashedPassword = await bcrypt.hash(requestData.newPassword, 10);
+            user.password = hashedPassword;
+          
+            await user.save();
+            const response = { success: true, data: "Password updated", error: false}
+            resolve(response)
+        
+        } else {
+            const response = { success: false, data: "User not found", error: true }
+            reject(response)
+        
+        }
+    } catch (error) {
+        console.error('Error storing new password:', error);
+        const response = { success: false, data: "Error storing new password", error: true }
+        reject(response)
+    }
+    })
+},
+
     cancelOrderHelper: async (requestData) => {
         return new Promise(async (resolve, reject) => {
             try {

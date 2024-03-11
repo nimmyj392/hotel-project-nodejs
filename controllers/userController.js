@@ -8,7 +8,11 @@ const managerDB = require("../models/managerModels/managerSchema")
 const supplierDB = require("../models/userModels/supplierSchema")
 const chefDB = require("../models/userModels/chefSchema")
 const cashierDB = require("../models/userModels/cashierSchema")
+const otpDB = require("../models/otpSchema")
+
 const { orderListHelper } = require('../helpers/userHelper')
+
+var otpValidator;
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -743,15 +747,13 @@ module.exports = {
 
     }),
     forgotPassword: async (req, res) => {
+        const requestData = {
+            email: req.body.email
+        };
+    
         try {
-            console.log("req :",req.body)
-            const requestData = {
-                email: req.body.email,
-                password: req.body.password
-            };
-
             const validatorResponse = await userDataValidator.forgotPasswordValidator(requestData);
-
+    
             if (validatorResponse && validatorResponse.error) {
                 return res.json({
                     isSuccess: false,
@@ -759,98 +761,144 @@ module.exports = {
                     error: validatorResponse.error
                 });
             } else if (validatorResponse && validatorResponse.value) {
-
-
-                const otp = Math.floor(100000 + Math.random() * 900000);
-
-                app.locals.otp=otp
-
-                req.session.otp = otp;
-                req.session.password = requestData.password;
-                req.session.email = requestData.email;
-
-                await transporter.sendMail({
-                    from: 'nimmyj392@gmail.com',
-                    to: requestData.email,
-                    subject: 'OTP for Account Verification',
-                    text: `Your OTP (One Time Password) is: ${otp}. Please use this OTP to verify your account.`
+                userHelper.forgotPasswordHelper(requestData).then((response) => {
+                    if (response.success) {
+                        return res.json({
+                            isSuccess: true,
+                            response: response.data,
+                            error: false
+                        });
+                    } else {
+                        return res.json({
+                            isSuccess: false,
+                            response: {},
+                            error: response.data
+                        });
+                    }
+                }).catch((response) => {
+                    return res.json({
+                        isSuccess: false,
+                        response: {},
+                        error: response.data
+                    });
                 });
-                console.log('OTP sent to email:', requestData.email);
-
-                return res.json({
-                    isSuccess: true,
-                    response: "OTP sent successfully",
-                    error: false
-                });
-
             }
         } catch (error) {
-            console.error('Error sending OTP:', error);
-            return res.json({
-                isSuccess: false,
-                response:{} ,
-                error: "Error sending OTP"
-            });
-        }
-    },
-   verifyOTPAndStoreUser: async (req, res) => {
-    const localOtp = app.locals.otp
-    console.log(localOtp)
-    const otp = req.body.otp;
-    console.log('body : ',req.body)
-    const storedOTP = req.session.otp;
-    console.log("storedOTP",req.session);
-
-    if (otp != storedOTP) {
-        return res.json({
-            isSuccess: false,
-            response: {},
-            error: 'Invalid OTP',
-        });
-    }
-
-    const userEmail = req.session.email;
-    const newPassword = req.session.password;
-
-    let dbResponse;
-    try {
-        
-        dbResponse = await chefDB.findOneAndUpdate({ email: userEmail }, { password: newPassword });
-        if (!dbResponse) {
-            dbResponse = await managerDB.findOneAndUpdate({ email: userEmail }, { password: newPassword });
-        }
-        if (!dbResponse) {
-            dbResponse = await supplierDB.findOneAndUpdate({ email: userEmail }, { password: newPassword });
-        }
-        if (!dbResponse) {
-            dbResponse = await cashierDB.findOneAndUpdate({ email: userEmail }, { password: newPassword });
-        }
-
-        if (dbResponse) {
-            return res.json({
-                isSuccess: true,
-                response: "password updated successfully!",
-                error: null,
-            });
-        } else {
+            console.error('Error in forgot password:', error);
             return res.json({
                 isSuccess: false,
                 response: {},
-                error: 'Failed to update password in any database',
+                error: "Error in forgot password"
+            });
+        }
+    },
+    
+    
+    
+
+verifyOTPAndStoreUser: async (req, res) => {
+    const requestData = {
+        email: req.body.email,
+        otp: req.body.otp
+    };
+
+    try {
+        const validatorResponse = await userDataValidator.verifyOTPAndStoreUserValidator(requestData);
+
+        if (validatorResponse && validatorResponse.error) {
+            return res.json({
+                isSuccess: false,
+                response: {},
+                error: validatorResponse.error
+            });
+        } else if (validatorResponse && validatorResponse.value) {
+            userHelper.verifyOTPHelper(requestData).then((response) => {
+                if (response.success) {
+                    return res.json({
+                        isSuccess: true,
+                        response: response.data,
+                        error: false
+                    });
+                } else {
+                    return res.json({
+                        isSuccess: false,
+                        response: {},
+                        error: response.data
+                    });
+                }
+            }).catch((response) => {
+                return res.json({
+                    isSuccess: false,
+                    response: {},
+                    error: response.data
+                });
             });
         }
     } catch (error) {
+        console.error('Error verifying OTP:', error);
         return res.json({
             isSuccess: false,
             response: {},
-            error: error.message || 'An error occurred while updating password in the database',
+            error: "Error verifying OTP"
         });
     }
 },
+storeNewPassword :async (req, res) => {
+    try {
 
-    
-    
+        const requestData = {
+            email: req.body.email,
+            otp: req.body.otp,
+            newPassword:req.body.newPassword
+        };
 
+        
+        // const validationResponse = await userDataValidator.storeNewPasswordValidator(requestData);
+        // if (!validationResponse.success) {
+        //     return res.json({
+        //         isSuccess: false,
+        //         response: {},
+        //         error: "error in validation"
+        //     });
+        // }
+// console.log("val",validationResponse)
+        
+        const otpDocument = await otpDB.findOne({ email: requestData.email }).sort({ createdAt: -1 });
+        if (!otpDocument) {
+            return res.json({
+                isSuccess: false,
+                response: {},
+                error: 'Document not found or expired'
+            });
+        }
+
+        if (otpDocument.otp !== requestData.otp) {
+            return res.json({
+                isSuccess: false,
+                response: {},
+                error: 'Invalid OTP'
+            });
+        }
+
+        await otpDB.deleteOne({ _id: otpDocument._id });
+
+     
+        const response = await userHelper.storeNewPasswordHelper(requestData);
+
+        return res.json({
+            isSuccess: response.success,
+            response: response.data,
+            error: response.error
+        });
+    } catch (error) {
+        console.error('Error storing new password:', error);
+        return res.json({
+            isSuccess: false,
+            response: {},
+            error: "Error storing new password"
+        });
+    }
+},
 
     cancelOrder: (async (req, res) => {
         const requestData = {

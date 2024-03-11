@@ -33,6 +33,7 @@ router.post("/collectPaymentByCash",verifyToken.verifyToken("cashier"),userContr
 router.post("/cancelOrder",verifyToken.verifyToken("supplier"),userController.cancelOrder)
 router.post("/forgotPassword",userController.forgotPassword) 
 router.post("/verifyOtpAndStoreUser",userController.verifyOTPAndStoreUser)
+router.post("/storeNewPassword",userController.storeNewPassword )
 router.delete("/logOut",userController.logOut)
 
 module.exports = router
