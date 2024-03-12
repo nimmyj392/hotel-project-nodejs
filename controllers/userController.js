@@ -573,6 +573,44 @@ console.log("fdfgfjdgg")
             });
         }
     },
+    viewOrderList: async (req, res) => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Set time to the beginning of the day
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1); // Get tomorrow's date
+    
+        const requestData = {
+            createdAt: {
+                $gte: today, // Greater than or equal to today
+                $lt: tomorrow // Less than tomorrow
+            },
+            deleted: false
+        };
+    
+        try {
+            const response = await userHelper.viewOrderListHelper(requestData);
+            if (response.success) {
+                res.json({
+                    isSuccess: true,
+                    response: response.data,
+                    error: false
+                });
+            } else {
+                res.json({
+                    isSuccess: false,
+                    response: {},
+                    error: response.data
+                });
+            }
+        } catch (error) {
+            res.json({
+                isSuccess: false,
+                response: {},
+                error: error.message // You might want to handle error.message instead of error.data
+            });
+        }
+    },
+
     updateStatusBySupplier:async(req, res) =>{
         try {
             const { orderId, newStatus } = req.body;
