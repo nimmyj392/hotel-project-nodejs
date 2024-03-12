@@ -26,7 +26,7 @@ router.get("/viewTodaysMenu",verifyToken.verifyToken("supplier"),userController.
 router.post("/orderList",verifyToken.verifyToken("supplier"),userController.orderList)
 router.get("/getAllOrdersForChef",verifyToken.verifyToken("chef"),userController.getAllOrdersForChef)
 router.post("/updateStatusByChef",verifyToken.verifyToken("chef"),userController.updateStatusByChef)
-router.get("/viewOrdersServed",,verifyToken.verifyToken("cashier"),userController.viewOrdersServed)
+router.get("/viewOrdersServed",verifyToken.verifyToken("cashier"),userController.viewOrdersServed)
 router.get("/viewOrdersPending",verifyToken.verifyToken("supplier"),userController.viewOrdersPending)
 router.post("/calculateBill",verifyToken.verifyToken("cashier"),userController.calculateBill)
 router.post("/collectPaymentByCash",verifyToken.verifyToken("cashier"),userController.collectPaymentByCash)
