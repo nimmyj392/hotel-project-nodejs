@@ -509,7 +509,7 @@ module.exports = {
                 error: error.data
             });
         }
-    },
+    }, 
 
 
 

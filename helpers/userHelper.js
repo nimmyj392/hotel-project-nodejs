@@ -451,7 +451,7 @@ module.exports = {
 
             }
 console.log('stock',foodItem.stock)
-            if (foodItem.stock < requestDataFormatted.quantity) {
+            if (foodItem.stock <requestDataFormatted.quantity) {
                 const response = {
                     success: false,
                     data: "Insufficient stock for the requested quantity.",
@@ -622,63 +622,58 @@ console.log('stock',foodItem.stock)
         return new Promise(async (resolve, reject) => {
             try {
                 const orders = await orderDB.find({ 'chefUpdates.status': "served" });
-
-                const servedOrders = orders.filter(order => order.chefUpdates.some(update => update.status === "served"));
-
-                if (!servedOrders || servedOrders.length === 0) {
-                    const response = {
-                        success: true,
-                        data: "No served orders found."
-                    };
-                    resolve(response);
-                    return;
-                }
-
-                const formattedOrders = await Promise.all(servedOrders.map(async order => {
-                    const supplier = await supplierDB.findById(order.supplierId);
-                    const supplierName = supplier ? supplier.name : "Unknown";
-
-                    const formattedItems = await Promise.all(order.items.map(async item => {
-                        const food = await foodDB.findById(item.foodId);
-                        const foodName = food ? food.name : "Unknown";
+    
+                const servedOrdersByTable = {};
+    
+                orders.forEach(order => {
+                    const tableId = order.tableId.toString(); // Convert ObjectId to string
+                    if (!servedOrdersByTable[tableId]) {
+                        servedOrdersByTable[tableId] = [];
+                    }
+                    servedOrdersByTable[tableId].push(order);
+                });
+    
+                const formattedOrdersByTable = {};
+    
+                for (const tableId in servedOrdersByTable) {
+                    const tableOrders = servedOrdersByTable[tableId];
+    
+                    const formattedOrders = await Promise.all(tableOrders.map(async order => {
+                        const supplier = await supplierDB.findById(order.supplierId);
+                        const supplierName = supplier ? supplier.name : "Unknown";
+    
+                        const formattedItems = await Promise.all(order.items.map(async item => {
+                            const food = await foodDB.findById(item.foodId);
+                            const foodName = food ? food.name : "Unknown";
+                            return {
+                                foodId: item.foodId,
+                                foodName,
+                                quantity: item.quantity,
+                                price: item.price * item.quantity // Calculate price for each item based on quantity
+                            };
+                        }));
+    
+                        // Calculate total price
+                        const totalPrice = formattedItems.reduce((total, item) => total + item.price, 0);
+    
                         return {
-                            foodId: item.foodId,
-                            foodName,
-                            quantity: item.quantity,
-                            price: item.price * item.quantity // Calculate price for each item based on quantity
+                            supplierName,
+                            items: formattedItems,
+                            totalPrice
                         };
                     }));
-
-                    // Calculate total price
-                    const totalPrice = formattedItems.reduce((total, item) => total + item.price, 0);
-
-                    const table = await tableDB.findById(order.tableId);
-                    const tableName = table ? table.name : "Unknown";
-
-                    return {
-                        supplierName,
-                        tableName,
-                        items: formattedItems,
-                        totalPrice
-                    };
-                }));
-
-                const response = {
-                    success: true,
-                    data: formattedOrders
-                };
-                resolve(response);
-
+    
+                    formattedOrdersByTable[tableId] = formattedOrders;
+                }
+    
+                resolve(formattedOrdersByTable);
+    
             } catch (error) {
-                const response = {
-                    success: false,
-                    data: error
-                };
-                reject(response);
+                reject(error);
             }
         });
     },
-
+    
 
 
     viewOrdersPendingHelper: async (requestData) => {
