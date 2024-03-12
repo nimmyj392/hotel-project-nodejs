@@ -401,36 +401,40 @@ module.exports = {
         });
     },
 
-    viewTodaysMenuHelper: (requestData) => {
-
+    viewTodaysMenuHelper: () => {
         return new Promise(async (resolve, reject) => {
-
-
-            const menu = await todaysMenuDB.find({ deleted: requestData.deleted });
-            if (menu) {
+            try {
+                // Get today's date
+                const today = new Date();
+                // Set the start of the day
+                const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                // Set the end of the day
+                const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+    
+                // Query the database for menu items created today
+                const menus = await todaysMenuDB.find({
+                    createdAt: { $gte: startOfDay, $lt: endOfDay },
+                    deleted: false
+                });
+    
                 const response = {
                     success: true,
-                    data: menu,
-                }
-
-                resolve(response)
-                return;
-            }
-
-
-            else {
+                    data: menus,
+                };
+                resolve(response);
+            } catch (error) {
                 const response = {
                     success: false,
-                    data: error
-                }
+                    message: 'Error fetching menu.',
+                    error: error,
+                };
                 reject(response);
             }
-
         });
-
     },
-
-    orderListHelper: (requestDataFormatted) => {
+    
+    
+        orderListHelper: (requestDataFormatted) => {
 
         console.log("requestDataFormattedx", requestDataFormatted)
         return new Promise(async (resolve, reject) => {
