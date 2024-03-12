@@ -4,14 +4,13 @@ const Schema = mongoose.Schema;
 const orderSchema = new Schema({
   tableId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Table', 
+    ref: 'Table',
     required: true
   },
   items: [{
     foodId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Dish', 
-      
+      ref: 'Dish',
     },
     quantity: {
       type: Number,
@@ -20,35 +19,37 @@ const orderSchema = new Schema({
     paid: {
       type: Boolean,
       default: false
-  },
-  price: {
-    type: Number
-}
+    },
+    price: {
+      type: Number
+    }
   }],
   supplierId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Supplier', 
+    ref: 'Supplier',
     required: true
   },
-
   createdAt: {
     type: Date,
     default: Date.now
   },
-
   chefUpdates: [{
     status: {
       type: String,
-      enum: ['pending',  'served','cancelled'],
-      
+      enum: ['pending', 'cancelled'],
     },
     updatedAt: {
       type: Date,
       default: Date.now
     }
   }],
-  totalPrice:{
-    type:Number
+ 
+  supplierStatus: {
+    type: String,
+    enum: ['ready_to_payment', 'served', 'cancelled']
+  },
+  totalPrice: {
+    type: Number
   },
   deleted: {
     type: Boolean,

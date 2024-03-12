@@ -468,7 +468,7 @@ module.exports = {
 
     orderList: async (req, res) => {
         try {
-            console.log("Received request:", req.body);
+       
 
             const requestData = {
                 selectedDishes: req.body.selectedDishes,
@@ -476,6 +476,7 @@ module.exports = {
                 supplierId: req.userId
             }
             const invalidOrder = requestData.selectedDishes.find(dish => !dish.quantity);
+            console.log("invalidOrder")
             if (invalidOrder) {
 
                 res.json({
@@ -491,7 +492,7 @@ module.exports = {
                 orderData.tableId = requestData.tableId;
                 orderData.supplierId = req.userId;
 
-
+console.log("fdfgfjdgg")
                 const response = await userHelper.orderListHelper(orderData);
                 console.log("response", response)
                 responses.push(response);
@@ -547,50 +548,102 @@ module.exports = {
         });
     },
     
-    updateStatusByChef: (async (req, res) => {
-
-        const requestData = {
-            orderId: req.body.orderId,
-            status: req.body.status,
-
-        };
-
-        const validatorResponse = await userDataValidator.updateStatusByChefValidator(requestData);
-
-        if (validatorResponse && validatorResponse.error) {
-            res.json({
-                isSuccess: false,
-                response: {},
-                error: validatorResponse.error
-            })
+ addFoodInOrderList:async (req, res)  =>{
+        try {
+            const { orderId, foodId, quantity } = req.body;
+    
+            if (!orderId || !foodId || !quantity) {
+                return res.status(400).json({
+                    success: false,
+                    error: "Missing required fields: orderId, foodId, quantity"
+                });
+            }
+    
+            const updatedOrder = await userHelper.addFoodInOrderListHelper(orderId, foodId, quantity);
+    
+            return res.status(200).json({
+                success: true,
+                data: updatedOrder,
+                message: "Food item added to order successfully"
+            });
+        } catch (error) {
+            return res.status(500).json({
+                success: false,
+                error: error.message
+            });
         }
-        else if (validatorResponse && validatorResponse.value) {
-            userHelper.updateStatusByChefHelper(requestData).then((response) => {
-
-                if (response.success) {
-                    res.json({
-                        isSuccess: true,
-                        response: response.data,
-                        error: false
-                    })
-                } else {
-                    res.json({
-                        isSuccess: false,
-                        response: {},
-                        error: response.data
-                    })
-                }
-            }).catch((response) => {
-                res.json({
-                    isSuccess: false,
-                    response: {},
-                    error: response.data
-                })
-
-
-            })
+    },
+    updateStatusBySupplier:async(req, res) =>{
+        try {
+            const { orderId, newStatus } = req.body;
+    
+            if (!orderId || !newStatus) {
+                return res.status(400).json({
+                    success: false,
+                    response:{},
+                    error: "Missing required fields: orderId, newStatus"
+                });
+            }
+    
+            const result = await userHelper.updateStatusBySupplierHelper(orderId, newStatus);
+    
+            if (result.success) {
+                return res.status(200).json({
+                    success: true,
+                    response: result.data,
+                    error:{}
+                });
+            } else {
+                return res.status(404).json({
+                    success: false,
+                    response:{},
+                    error: result.error
+                });
+            }
+        } catch (error) {
+            return res.status(500).json({
+                success: false,
+                response:{},
+                error: error.message
+            });
         }
-    }),
+    },
+  getServedOrders:async(req, res) =>{
+        try {
+            // Call the helper function to get served orders
+            const servedOrders = await userHelper.getServedOrdersHelper();
+    
+            return res.status(200).json({
+                success: true,
+                data: servedOrders,
+                error:false          
+            });
+        } catch (error) {
+            return res.status(500).json({
+                success: false,
+                response:{},
+                error: error.message
+            });
+        }
+    },
+    getReadyToPaymentOrders:async(req, res) =>{
+        try {
+            // Call the helper function to get served orders
+            const orders = await userHelper.getReadyToPaymentOrdersHelper();
+    
+            return res.status(200).json({
+                success: true,
+                data: orders,
+                error:false          
+            });
+        } catch (error) {
+            return res.status(500).json({
+                success: false,
+                response:{},
+                error: error.message
+            });
+        }
+    },
     viewOrdersServed: (async (req, res) => {
         const requestData = {
             cashierId: req.userId

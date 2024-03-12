@@ -479,9 +479,9 @@ console.log('stock',foodItem.stock)
                 tableId: requestDataFormatted.tableId,
                 items: items,
                 supplierId: requestDataFormatted.supplierId,
-                chefUpdates: [{ status: 'pending' }],
+                supplierStatus: 'ready_to_payment',
                 totalPrice: totalPrice
-            })
+            });
             const dbResponse = await newOrder.save();
 
             if (!dbResponse) {
@@ -576,105 +576,158 @@ console.log('stock',foodItem.stock)
 
 
 
-    updateStatusByChefHelper: (requestData) => {
+ addFoodInOrderListHelper:(orderId, foodId, quantity)=> {
         return new Promise(async (resolve, reject) => {
-
-            const order = await orderDB.findById(requestData.orderId);
-
+        try {
+            const existingOrder = await orderDB.findById(orderId);
+            
+            if (!existingOrder) {
+                const response = {
+                    success: false,
+                    data: "Order not found",
+                    error: true
+                };
+                reject(response) ;
+            }
+        
+            const foodItem = await todaysMenuDB.findOne({ foodId });
+            if (!foodItem) {
+                const response = {
+                    success: false,
+                    data: "Food item not found",
+                    error: true
+                };
+                reject(response) ;
+            }
+        
+            if (foodItem.stock < quantity) {
+                const response = {
+                    success: false,
+                    data: "Insufficient stock",
+                    error: true
+                };
+                reject(response) ;
+            }
+        
+            existingOrder.items.push({
+                foodId,
+                quantity,
+                price: foodItem.price,
+                totalPriceForItem: quantity * foodItem.price
+            });
+        
+            // Update total price by summing prices of all items in the order
+            existingOrder.totalPrice = existingOrder.items.reduce((total, item) => {
+                return total + item.totalPriceForItem;
+            }, 0);
+        
+            foodItem.stock -= quantity;
+            await foodItem.save();
+        
+            const savedOrder = await existingOrder.save();
+        
+            const response = {
+                success: true,
+                data: savedOrder,
+                error: false
+            };
+            resolve(response) ;
+        } catch (error) {
+            const response = {
+                success: false,
+                data: error.message,
+                error: true
+            };
+            reject(response) ;
+        }
+    })
+    },
+    updateStatusBySupplierHelper:(orderId, newStatus) =>{
+        return new Promise(async (resolve, reject) => {
+        try {
+            // Find the order by its ID
+            const order = await orderDB.findById(orderId);
             if (!order) {
                 const response = {
                     success: false,
-                    data: "Order not found"
+                    data: "Order not found",
+                    error: true
                 };
-                reject(response);
-
+                reject(response) ;
             }
-
-            const latestChefUpdate = order.chefUpdates[order.chefUpdates.length - 1];
-
-            if (latestChefUpdate && latestChefUpdate.status !== 'pending') {
-                const response = {
-                    success: false,
-                    data: "Order status cannot be updated. It's not in 'pending' status."
-                };
-                reject(response)
-
-            }
-
-            order.status = requestData.status;
-            order.preparationTime = requestData.preparationTime;
-
-            order.chefUpdates.push({ status: requestData.status, updatedAt: Date.now() });
-
-            const updatedOrder = await order.save();
+    
+            // Update the supplier status
+            order.supplierStatus = newStatus;
+    
+            // Save the updated order
+            await order.save();
             const response = {
                 success: true,
-                data: "Order status and preparation time updated successfully.", updatedOrder,
-
+                data: order,
+                error: false
             };
-            resolve(response);
-
-
-
-        });
-    },
-    viewOrdersServedHelper: async () => {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const orders = await orderDB.find({ 'chefUpdates.status': "served" });
-    
-                const servedOrdersByTable = {};
-    
-                orders.forEach(order => {
-                    const tableId = order.tableId.toString(); // Convert ObjectId to string
-                    if (!servedOrdersByTable[tableId]) {
-                        servedOrdersByTable[tableId] = [];
-                    }
-                    servedOrdersByTable[tableId].push(order);
-                });
-    
-                const formattedOrdersByTable = {};
-    
-                for (const tableId in servedOrdersByTable) {
-                    const tableOrders = servedOrdersByTable[tableId];
-    
-                    const formattedOrders = await Promise.all(tableOrders.map(async order => {
-                        const supplier = await supplierDB.findById(order.supplierId);
-                        const supplierName = supplier ? supplier.name : "Unknown";
-    
-                        const formattedItems = await Promise.all(order.items.map(async item => {
-                            const food = await foodDB.findById(item.foodId);
-                            const foodName = food ? food.name : "Unknown";
-                            return {
-                                foodId: item.foodId,
-                                foodName,
-                                quantity: item.quantity,
-                                price: item.price * item.quantity // Calculate price for each item based on quantity
-                            };
-                        }));
-    
-                        // Calculate total price
-                        const totalPrice = formattedItems.reduce((total, item) => total + item.price, 0);
-    
-                        return {
-                            supplierName,
-                            items: formattedItems,
-                            totalPrice
-                        };
-                    }));
-    
-                    formattedOrdersByTable[tableId] = formattedOrders;
-                }
-    
-                resolve(formattedOrdersByTable);
-    
-            } catch (error) {
-                reject(error);
-            }
-        });
+            resolve(response) ;
+        } catch (error) {
+            const response = {
+                success: false,
+                data: error.message,
+                error: true
+            };
+            reject(response) ;
+        }
+    })
     },
     
-
+   getServedOrdersHelper: async () => {
+        try {
+            // Query the database for orders with "served" status
+            const servedOrders = await orderDB.find({ supplierStatus: 'served' });
+    
+            const response = {
+                success: true,
+                data:servedOrders,
+                error: false
+            };
+            resolve(response) ;
+        } catch (error) {
+            const response = {
+                success: false,
+                data: error.message,
+                error: true
+            };
+            reject(response) ;
+        }
+    },
+    getReadyToPaymentOrdersHelper: async () => {
+        try {
+            
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); 
+            
+           
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            
+            
+            const orders = await orderDB.find({
+                supplierStatus: 'ready_to_payment',
+                createdAt: { $gte: today, $lt: tomorrow }
+            });
+    
+            return {
+                success: true,
+                data: orders,
+                error: false
+            };
+        } catch (error) {
+            return {
+                success: false,
+                data: error.message,
+                error: true
+            };
+        }
+    },
+    
 
     viewOrdersPendingHelper: async (requestData) => {
         return new Promise(async (resolve, reject) => {
@@ -705,82 +758,87 @@ console.log('stock',foodItem.stock)
     calculateBillHelper: async () => {
         return new Promise(async (resolve, reject) => {
             try {
-                const order = await orderDB.findOne({ 'chefUpdates.status': 'served' }).sort({ createdAt: -1 });
-
-                if (!order) {
-                    const response = { success: false, data: "No served orders found." };
-                    resolve(response);
-                    return;
-                }
-
-                const totalBillAmount = order.totalPrice;
-
-                if (totalBillAmount < 1) {
-                    const response = { success: false, data: "Total bill amount must be at least INR 1.00" };
-                    resolve(response);
-                    return;
-                }
-                let razorpayOrder;
-                try {
-                    razorpayOrder = await razorpay.orders.create({
-                        amount: totalBillAmount * 100,
-                        currency: 'INR',
-                        receipt: `order_${order._id}`,
-                        payment_capture: '1'
-                    });
-                } catch (razorpayError) {
-
-                    console.error('Razorpay error:', razorpayError);
-                    const response = { success: false, data: "Error creating Razorpay order." };
-                    resolve(response);
-                    return;
-                }
-
-                let unpaidItem;
-                for (let i = order.items.length - 1; i >= 0; i--) {
-                    if (!order.items[i].paid) {
-                        unpaidItem = order.items[i];
-                        break;
+            
+                const tables = await tableDB.find();
+    
+                for (const table of tables) {
+              
+                    const orders = await orderDB.find({ tableId: table._id, supplierStatus: 'ready_to_payment' }).sort({ createdAt: -1 });
+    
+                    for (const order of orders) {
+                        const totalBillAmount = order.totalPrice;
+    
+                        if (totalBillAmount < 1) {
+                            const response = { success: false, data: `Total bill amount for table ${table.tableNumber} must be at least INR 1.00` ,error:true};
+                            resolve(response);
+                            return;
+                        }
+    
+                        let razorpayOrder;
+                        try {
+                            razorpayOrder = await razorpay.orders.create({
+                                amount: totalBillAmount * 100,
+                                currency: 'INR',
+                                receipt: `order_${order._id}`,
+                                payment_capture: '1'
+                            });
+                        } catch (razorpayError) {
+                            console.error('Razorpay error:', razorpayError);
+                            const response = { success: false, data: "Error creating Razorpay order.",error:true };
+                            resolve(response);
+                            return;
+                        }
+    
+                        let unpaidItem;
+                        for (let i = order.items.length - 1; i >= 0; i--) {
+                            if (!order.items[i].paid) {
+                                unpaidItem = order.items[i];
+                                break;
+                            }
+                        }
+    
+                        if (!unpaidItem) {
+                            const response = { success: false, data: `No unpaid items found in the order for table ${table.tableNumber}.` ,error:true};
+                            resolve(response);
+                            return;
+                        }
+    
+                        const payment = new paymentDB({
+                            orderId: order._id,
+                            totalAmount: totalBillAmount,
+                            amountPaid: totalBillAmount,
+                            currency: 'INR',
+                            receipt: razorpayOrder.id,
+                            dishId: unpaidItem.foodId
+                        });
+    
+                        await payment.save();
+                        unpaidItem.paid = true;
+                        await order.save();
+    
+                        const response = {
+                            success: true,
+                            data: `Bill calculated successfully for table ${table.tableNumber}.`,
+                            totalBillAmount: totalBillAmount,
+                            razorpayOrder: {
+                                id: razorpayOrder.id,
+                                amount_paid: totalBillAmount
+                            },
+                            error:false
+                        };
+                        resolve(response);
                     }
                 }
-
-                if (!unpaidItem) {
-                    const response = { success: false, data: "No unpaid items found in the order." };
-                    resolve(response);
-                    return;
-                }
-
-                const payment = new paymentDB({
-                    orderId: order._id,
-                    totalAmount: totalBillAmount,
-                    amountPaid: totalBillAmount,
-                    currency: 'INR',
-                    receipt: razorpayOrder.id,
-                    dishId: unpaidItem.foodId
-                });
-
-                await payment.save();
-                unpaidItem.paid = true;
-                await order.save();
-
-                const response = {
-                    success: true,
-                    data: "Bill calculated successfully.",
-                    totalBillAmount: totalBillAmount,
-                    razorpayOrder: {
-                        id: razorpayOrder.id,
-                        amount_paid: totalBillAmount
-                    }
-                };
-                resolve(response);
-            } catch (razorpayError) {
-                console.error('Razorpay error:', razorpayError);
-                const response = { success: false, data: "Error creating Razorpay order. Details: " + razorpayError.message };
+    
+            } catch (error) {
+                console.error('Error:', error);
+                const response = { success: false, data: "An error occurred. Details: " + error.message,error:true };
                 resolve(response);
                 return;
             }
         });
     },
+    
 
 
 

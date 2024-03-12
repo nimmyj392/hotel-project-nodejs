@@ -716,30 +716,55 @@ module.exports = {
 
     },
 
-    orderListHelper: (requestData) => {
+    orderListHelper: async (requestData) => {
         return new Promise(async (resolve, reject) => {
-
-            const orderList = await orderDB.find({ deleted: requestData.deleted });
-
+        try {
+            const orderList = await orderDB.find({
+                createdAt: requestData.createdAt,
+                deleted: requestData.deleted
+            });
+    
             if (orderList.length === 0) {
                 const response = {
-                    success: false,
-                    data: "No orders found."
-                };
-                resolve(response);
+                    success: true,
+                    data: "no orders found",
+                    error:true
+                }
+
+                reject(response)
                 return;
-            }
-            else {
+            } else {
+                const ordersWithDetails = await Promise.all(orderList.map(async (order) => {
+                    const supplier = await supplierDB.findById(order.supplierId);
+                    const table = await tableDB.findById(order.tableId);
+                    return {
+                        ...order.toObject(),
+                        supplierName: supplier ? supplier.name : 'Unknown Supplier',
+                        tableName: table ? table.name : 'Unknown Table'
+                    };
+                }));
+    
                 const response = {
                     success: true,
-                    data: orderList
-                };
-                resolve(response);
-                return;
+                    data:ordersWithDetails,
+                    error:false
+                }
 
+                resolve(response)
+                return;
             }
-        });
+        } catch (error) {
+            const response = {
+                success: false,
+                data:error.message,
+                error:true
+            }
+
+            reject(response)
+        }
+    })
     },
+    
     paymentHelper: (requestData) => {
         return new Promise(async (resolve, reject) => {
 
