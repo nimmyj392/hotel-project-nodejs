@@ -515,41 +515,38 @@ module.exports = {
 
 
 
-    getAllOrdersForChef: (async (req, res) => {
-
+    getAllOrdersForChef: async (req, res) => {
         const requestData = {
             deleted: false
         }
-
-        userHelper.getAllOrdersForChefHelper(requestData).then((response) => {
-
+        
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); 
+        
+        userHelper.getAllOrdersForChefHelper(requestData, today).then((response) => {
             if (response.success) {
                 res.json({
                     isSuccess: true,
                     response: response.data,
                     error: false
-                })
+                });
             } else {
                 res.json({
                     isSuccess: false,
                     response: {},
                     error: response.data
-                })
+                });
             }
         }).catch((response) => {
             res.json({
                 isSuccess: false,
                 response: {},
                 error: response.data
-            })
-
-
-        })
-
-
-    }),
-
-
+            });
+        });
+    },
+    
     updateStatusByChef: (async (req, res) => {
 
         const requestData = {

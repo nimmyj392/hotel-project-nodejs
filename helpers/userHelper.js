@@ -513,28 +513,26 @@ console.log('stock',foodItem.stock)
 
         });
     },
-    getAllOrdersForChefHelper: (requestData) => {
-
+    getAllOrdersForChefHelper: (requestData, today) => {
         return new Promise(async (resolve, reject) => {
             try {
-                const orderList = await orderDB.find({ deleted: requestData.deleted });
-
+                const orderList = await orderDB.find({ deleted: requestData.deleted, createdAt: { $gte: today } });
+    
                 if (orderList.length === 0) {
                     const response = {
                         success: false,
-                        data: "No orders found.",
+                        data: "No orders found for today.",
                         error: true
                     };
                     reject(response);
                     return;
                 }
-
+    
                 for (let order of orderList) {
                     try {
                         const food = await foodDB.findById(order.items[0].foodId);
                         order.foodName = food ? food.name : "Unknown";
-
-
+                        
                         order.items.forEach(item => {
                             item.foodName = order.foodName;
                         });
@@ -543,7 +541,7 @@ console.log('stock',foodItem.stock)
                         order.foodName = "Unknown";
                     }
                 }
-
+    
                 const response = {
                     success: true,
                     data: orderList.map(order => {
@@ -557,8 +555,7 @@ console.log('stock',foodItem.stock)
                             totalPrice: order.totalPrice,
                             deleted: order.deleted,
                             createdAt: order.createdAt,
-                            __v: order.__v,
-
+                            __v: order.__v
                         }
                     }),
                     error: false
@@ -575,7 +572,7 @@ console.log('stock',foodItem.stock)
             }
         });
     },
-
+    
 
 
 
