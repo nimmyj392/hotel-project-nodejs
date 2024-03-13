@@ -33,20 +33,12 @@ const orderSchema = new Schema({
     type: Date,
     default: Date.now
   },
-  chefUpdates: [{
-    status: {
-      type: String,
-      enum: ['pending', 'cancelled'],
-    },
-    updatedAt: {
-      type: Date,
-      default: Date.now
-    }
-  }],
+  
  
   supplierStatus: {
     type: String,
-    enum: ['ready_to_payment', 'served', 'cancelled']
+    enum: ['ready_to_payment', 'served', 'cancelled'],
+    default: null
   },
   totalPrice: {
     type: Number
