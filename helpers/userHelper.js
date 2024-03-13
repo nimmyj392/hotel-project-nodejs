@@ -642,7 +642,7 @@ module.exports = {
         }
     })
     },
-    viewOrderListHelper: async (requestData) => {
+viewOrderListHelper: async (requestData) => {
         return new Promise(async (resolve, reject) => {
         try {
             const orderList = await orderDB.find({
@@ -806,35 +806,31 @@ module.exports = {
     calculateBillHelper: async () => {
         return new Promise(async (resolve, reject) => {
             try {
-            
                 const tables = await tableDB.find();
     
+                let responseArray = []; // Array to store responses for each table
+    
                 for (const table of tables) {
-              
                     const orders = await orderDB.find({ tableId: table._id, supplierStatus: 'ready_to_payment' }).sort({ createdAt: -1 });
+    
+                    let tableResponse = {
+                        success: true,
+                        data: `Bill calculated successfully for table ${table.name}.`,
+                        error: false
+                    };
+    
+                    let paidAllOrders = true; // Flag to track if all orders for this table are paid
     
                     for (const order of orders) {
                         const totalBillAmount = order.totalPrice;
     
                         if (totalBillAmount < 1) {
-                            const response = { success: false, data: `Total bill amount for table ${table.tableNumber} must be at least INR 1.00` ,error:true};
-                            resolve(response);
-                            return;
-                        }
-    
-                        let razorpayOrder;
-                        try {
-                            razorpayOrder = await razorpay.orders.create({
-                                amount: totalBillAmount * 100,
-                                currency: 'INR',
-                                receipt: `order_${order._id}`,
-                                payment_capture: '1'
-                            });
-                        } catch (razorpayError) {
-                            console.error('Razorpay error:', razorpayError);
-                            const response = { success: false, data: "Error creating Razorpay order.",error:true };
-                            resolve(response);
-                            return;
+                            tableResponse = {
+                                success: false,
+                                data: `Total bill amount for table ${table.name} must be at least INR 1.00`,
+                                error: true
+                            };
+                            continue;
                         }
     
                         let unpaidItem;
@@ -846,11 +842,12 @@ module.exports = {
                         }
     
                         if (!unpaidItem) {
-                            const response = { success: false, data: `No unpaid items found in the order for table ${table.tableNumber}.` ,error:true};
-                            resolve(response);
-                            return;
+                            // If there are no unpaid items in the order, mark paidAllOrders as false and continue to the next order
+                            paidAllOrders = false;
+                            continue;
                         }
     
+                        // Process payment for the unpaid item
                         const payment = new paymentDB({
                             orderId: order._id,
                             totalAmount: totalBillAmount,
@@ -861,36 +858,40 @@ module.exports = {
                         });
     
                         await payment.save();
+    
+                        // Mark the unpaid item as paid
                         unpaidItem.paid = true;
                         await order.save();
     
-                        const response = {
-                            success: true,
-                            data: `Bill calculated successfully for table ${table.tableNumber}.`,
-                            totalBillAmount: totalBillAmount,
-                            razorpayOrder: {
-                                id: razorpayOrder.id,
-                                amount_paid: totalBillAmount
-                            },
-                            error:false
+                        // Prepare response for successful payment
+                        tableResponse.razorpayOrder = {
+                            id: razorpayOrder.id,
+                            amount_paid: totalBillAmount
                         };
-                        resolve(response);
                     }
+    
+                    // If all orders for this table are already paid, update the response accordingly
+                    if (paidAllOrders) {
+                        tableResponse.data = `All orders for table ${table.name} are already paid.`;
+                    }
+    
+                    responseArray.push(tableResponse); // Push the response for this table to the array
                 }
+    
+                resolve(responseArray); // Resolve with the array containing responses for all tables
     
             } catch (error) {
                 console.error('Error:', error);
-                const response = { success: false, data: "An error occurred. Details: " + error.message,error:true };
-                resolve(response);
-                return;
+                const response = {
+                    success: false,
+                    data: "An error occurred. Details: " + error.message,
+                    error: true
+                };
+                resolve(response); // Resolve with the error response
             }
-        });
+        })
     },
     
-
-
-
-
     collectPaymentByCashHelper: async () => {
         return new Promise(async (resolve, reject) => {
 
