@@ -663,13 +663,19 @@ module.exports = {
                     const ordersWithDetails = await Promise.all(orderList.map(async (order) => {
                         const supplier = await supplierDB.findById(order.supplierId);
                         const table = await tableDB.findById(order.tableId);
-                        const food = await foodDB.findById(order.foodId); // Assuming foodDB is your food database model
+                        const itemsWithFoodDetails = await Promise.all(order.items.map(async (item) => {
+                            const food = await foodDB.findById(item.foodId);
+                            return {
+                                ...item.toObject(),
+                                foodName: food ? food.name : 'Unknown Food'
+                            };
+                        }));
     
                         return {
                             ...order.toObject(),
                             supplierName: supplier ? supplier.name : 'Unknown Supplier',
                             tableName: table ? table.name : 'Unknown Table',
-                            foodName: food ? food.name : 'Unknown Food' // Assuming your food model has a 'name' field
+                            items: itemsWithFoodDetails
                         };
                     }));
     
@@ -693,6 +699,7 @@ module.exports = {
             }
         })
     },
+    
     
     updateStatusBySupplierHelper:(orderId, newStatus) =>{
         return new Promise(async (resolve, reject) => {

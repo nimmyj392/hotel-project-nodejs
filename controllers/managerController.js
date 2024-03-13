@@ -905,4 +905,38 @@ module.exports = {
 
 
     }),
+
+    viewTodaysMenu: async (req, res) => {
+        try {
+            // Get the current date
+            const currentDate = new Date();
+            // Set the start date to the beginning of the current day
+            const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), 0, 0, 0);
+            // Set the end date to the end of the current day
+            const endDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), 23, 59, 59);
+    
+            // Call viewTodaysMenuHelper with the start and end dates
+            const response = await managerHelper.viewTodaysMenuHelper(startDate, endDate);
+    
+            if (response.success) {
+                res.json({
+                    isSuccess: true,
+                    response: response.data,
+                    error: false
+                });
+            } else {
+                res.json({
+                    isSuccess: false,
+                    response: {},
+                    error: response.data
+                });
+            }
+        } catch (error) {
+            res.json({
+                isSuccess: false,
+                response: {},
+                error: error.message // Assuming error.message contains the error message
+            });
+        }
+    },
 }
