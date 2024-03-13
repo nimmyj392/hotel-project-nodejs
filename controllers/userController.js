@@ -1020,7 +1020,9 @@ module.exports = {
         }
     }),
     logOut: (async (req, res) => {
+        console.log("req",req.body)
         const requestData = {
+          
             userId: req.userId,
             userType: req.body.userType
         }
