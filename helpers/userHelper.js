@@ -642,54 +642,58 @@ module.exports = {
         }
     })
     },
-viewOrderListHelper: async (requestData) => {
+    viewOrderListHelper: async (requestData) => {
         return new Promise(async (resolve, reject) => {
-        try {
-            const orderList = await orderDB.find({
-                createdAt: requestData.createdAt,
-                deleted: requestData.deleted
-            });
+            try {
+                const orderList = await orderDB.find({
+                    createdAt: requestData.createdAt,
+                    deleted: requestData.deleted
+                });
     
-            if (orderList.length === 0) {
-                const response = {
-                    success: true,
-                    data: "no orders found",
-                    error:true
+                if (orderList.length === 0) {
+                    const response = {
+                        success: true,
+                        data: "no orders found",
+                        error: true
+                    }
+    
+                    reject(response)
+                    return;
+                } else {
+                    const ordersWithDetails = await Promise.all(orderList.map(async (order) => {
+                        const supplier = await supplierDB.findById(order.supplierId);
+                        const table = await tableDB.findById(order.tableId);
+                        const food = await foodDB.findById(order.foodId); // Assuming foodDB is your food database model
+    
+                        return {
+                            ...order.toObject(),
+                            supplierName: supplier ? supplier.name : 'Unknown Supplier',
+                            tableName: table ? table.name : 'Unknown Table',
+                            foodName: food ? food.name : 'Unknown Food' // Assuming your food model has a 'name' field
+                        };
+                    }));
+    
+                    const response = {
+                        success: true,
+                        data: ordersWithDetails,
+                        error: false
+                    }
+    
+                    resolve(response)
+                    return;
                 }
-
+            } catch (error) {
+                const response = {
+                    success: false,
+                    data: error.message,
+                    error: true
+                }
+    
                 reject(response)
-                return;
-            } else {
-                const ordersWithDetails = await Promise.all(orderList.map(async (order) => {
-                    const supplier = await supplierDB.findById(order.supplierId);
-                    const table = await tableDB.findById(order.tableId);
-                    return {
-                        ...order.toObject(),
-                        supplierName: supplier ? supplier.name : 'Unknown Supplier',
-                        tableName: table ? table.name : 'Unknown Table'
-                    };
-                }));
-    
-                const response = {
-                    success: true,
-                    data:ordersWithDetails,
-                    error:false
-                }
-
-                resolve(response)
-                return;
             }
-        } catch (error) {
-            const response = {
-                success: false,
-                data:error.message,
-                error:true
-            }
-
-            reject(response)
-        }
-    })
+        })
     },
+    
     updateStatusBySupplierHelper:(orderId, newStatus) =>{
         return new Promise(async (resolve, reject) => {
         try {
