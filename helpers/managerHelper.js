@@ -11,7 +11,7 @@ const generateToken = require('./tokenUtils')
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { checkPreferences } = require("joi")
-
+const todaysMenuDB = require("../models/foodModels/todaysmenuSchema")
 
 module.exports = {
     createManagerHelper: async (requestData) => {
