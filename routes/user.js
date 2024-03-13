@@ -33,7 +33,7 @@ router.post("/viewOrderList",verifyToken.verifyToken("supplier"),userController.
 router.post("/updateStatusBySupplier",verifyToken.verifyToken("supplier"),userController.updateStatusBySupplier)
 router.post("/addFoodInOrderList",verifyToken.verifyToken("supplier"),userController.addFoodInOrderList)
 router.get("/getServedOrders",verifyToken.verifyToken("cashier"),userController.getServedOrders)
-router.get("/getReadyToPaymentOrders",verifyToken.verifyToken("cashier"),userController.getReadyToPaymentOrders)
+router.get("/getReadyToPaymentOrders",userController.getReadyToPaymentOrders)
 router.post("/forgotPassword",userController.forgotPassword) 
 router.post("/verifyOtpAndStoreUser",userController.verifyOTPAndStoreUser)
 router.post("/storeNewPassword",userController.storeNewPassword )

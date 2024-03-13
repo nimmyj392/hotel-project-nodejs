@@ -759,23 +759,33 @@ module.exports = {
     },
     getReadyToPaymentOrdersHelper: async () => {
         try {
-            
             const today = new Date();
             today.setHours(0, 0, 0, 0); 
-            
-           
+    
             const tomorrow = new Date(today);
             tomorrow.setDate(tomorrow.getDate() + 1);
-            
-            
+    
             const orders = await orderDB.find({
                 supplierStatus: 'ready_to_payment',
                 createdAt: { $gte: today, $lt: tomorrow }
             });
     
+            // Fetch food names, supplier names, and table names
+            const data = await Promise.all(orders.map(async order => {
+                const food = await foodDB.findById(order.items[0].foodId);
+                const supplier = await supplierDB.findById(order.supplierId);
+                const table = await tableDB.findById(order.tableId);
+    
+                return {
+                    foodname: food ? food.name : 'Unknown',
+                    suppliername: supplier ? supplier.name : 'Unknown',
+                    tablename: table ? table.name : 'Unknown'
+                };
+            }));
+    
             return {
                 success: true,
-                data: orders,
+                data: data,
                 error: false
             };
         } catch (error) {
@@ -787,7 +797,6 @@ module.exports = {
         }
     },
     
-
     viewOrdersPendingHelper: async (requestData) => {
         return new Promise(async (resolve, reject) => {
 

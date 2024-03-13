@@ -32,7 +32,7 @@ router.post("/addPrice", verifyToken.verifyToken("manager"),  managerController.
 router.get("/viewTable",verifyToken.verifyToken("manager"), managerController.viewTable)
 router.get("/orderList",verifyToken.verifyToken("manager"), managerController.orderList)
 router.get("/payments",verifyToken.verifyToken("manager"), managerController.payments)
-router.get("/viewTodaysMenu", managerController.viewTodaysMenu)
+router.get("/viewTodaysMenu",verifyToken.verifyToken("manager"), managerController.viewTodaysMenu)
 module.exports = router
 
 
