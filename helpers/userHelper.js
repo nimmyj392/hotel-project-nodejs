@@ -436,7 +436,7 @@ module.exports = {
     
         orderListHelper: (requestDataFormatted) => {
 
-        console.log("requestDataFormattedx", requestDataFormatted)
+       
         return new Promise(async (resolve, reject) => {
 
             const foodItem = await todaysMenuDB.findOne({ foodId: requestDataFormatted.foodId });
@@ -450,7 +450,7 @@ module.exports = {
                 reject(response);
 
             }
-console.log('stock',foodItem.stock)
+
             if (foodItem.stock <requestDataFormatted.quantity) {
                 const response = {
                     success: false,

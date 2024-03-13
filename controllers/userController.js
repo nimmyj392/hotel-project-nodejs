@@ -492,7 +492,7 @@ module.exports = {
                 orderData.tableId = requestData.tableId;
                 orderData.supplierId = req.userId;
 
-console.log("fdfgfjdgg")
+
                 const response = await userHelper.orderListHelper(orderData);
                 console.log("response", response)
                 responses.push(response);
