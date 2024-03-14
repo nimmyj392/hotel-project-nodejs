@@ -44,11 +44,7 @@ app.use(session({
     cookie: { maxAge: 6000000 }
 }));
 
-cloudinary.config({
-    cloud_name: 'deoioprqg',
-    api_key: '223347899773652',
-    api_secret: '_zYPDwpLKeI0Wf3d-ZiMbHjSThc'
-});
+
 
 app.use('/', userRouter);
 app.use('/manager', managerRouter);

@@ -33,17 +33,7 @@ module.exports = {
     addFoodByChefHelper: (requestData) => {
         return new Promise(async (resolve, reject) => {
 
-            if (!requestData.name || !requestData.description || !requestData.category) {
-                const response = {
-                    success: false,
-
-                    data: "missing required fields",
-                    error: true
-                }
-                reject(response);
-            }
-
-
+          
             const existingFood = await foodDB.findOne({ name: requestData.name });
 
             if (existingFood) {
@@ -1034,7 +1024,7 @@ module.exports = {
                     return res.status(404).json({ success: false, data: "No user found with this email." });
                 }
 
-                const hashedPassword = await bcrypt.hash(newPassword, 10);
+                const hashedPassword = await bcrypt.hash(requestData.newPassword, 10);
 
 
                 existingUser.password = hashedPassword;
