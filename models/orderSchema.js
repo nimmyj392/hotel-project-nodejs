@@ -38,7 +38,7 @@ const orderSchema = new Schema({
   supplierStatus: {
     type: String,
     enum: ['ready_to_payment', 'served', 'cancelled'],
-    default: null
+    default: "pending"
   },
   totalPrice: {
     type: Number
