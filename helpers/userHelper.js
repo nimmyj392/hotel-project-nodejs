@@ -448,11 +448,13 @@ module.exports = {
                 { new: true } 
             );
     
-            return {
+           
+            const response = {
                 success: true,
                 data: menu,
-                error: false
+                error:false
             };
+            return (response)
         } catch (error) {
             console.error("Error updating today's menu:", error);
             return {
@@ -475,11 +477,12 @@ module.exports = {
                 };
             }
     
-            return {
+            const response = {
                 success: true,
-                data: deletedItem,
-                error: false
+                data:deletedItem ,
+                error:false
             };
+            return (response)
         } catch (error) {
             console.error("Error deleting menu item:", error);
             return {

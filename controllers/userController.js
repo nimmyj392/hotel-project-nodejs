@@ -471,9 +471,15 @@ module.exports = {
             const { menuId } = req.body; 
             const updatedData = req.body;
     
-            const result = await userHelper.editTodaysMenuHelper(menuId, updatedData);
+            const response = await userHelper.editTodaysMenuHelper(menuId, updatedData);
     
-            res.status(500).json({ success: true, error: false, data: result });
+            if (response.success) {
+                res.json({
+                    isSuccess: true,
+                    response: response.data,
+                    error: false
+                });
+            }
         } catch (error) {
             console.error("Error editing today's menu:", error);
             res.status(500).json({ success: false, error: true, data: "Internal server error" });
@@ -483,9 +489,15 @@ module.exports = {
         try {
             const { menuId } = req.body; 
     
-            const result = await userHelper.deleteTodaysMenuHelper(menuId);
+            const response = await userHelper.deleteTodaysMenuHelper(menuId);
     
-            res.status(500).json({ success: true, error: {}, data: result })
+            if (response.success) {
+                res.json({
+                    isSuccess: true,
+                    response: response.data,
+                    error: false
+                });
+            }
         } catch (error) {
             console.error("Error deleting today's menu item:", error);
             res.status(500).json({ success: false, error: true, data: "Internal server error" });
