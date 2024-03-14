@@ -1024,7 +1024,7 @@ module.exports = {
         const requestData = {
           
             userId: req.userId,
-            userType: req.body.userType
+            userType: req.userType
         }
         const validatorResponse = await userDataValidator.logOutValidator(requestData);
 

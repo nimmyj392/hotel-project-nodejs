@@ -1,7 +1,6 @@
 const dotenv = require("dotenv");
 dotenv.config({ path: "config.env" });
 const jwt = require("jsonwebtoken");
-const session = require("express-session");
 
 function generateToken(user, userRole) {
 

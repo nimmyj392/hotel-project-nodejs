@@ -62,7 +62,7 @@ module.exports = {
                     preparedBy: requestData.preparedBy
                 };
 
-                const dbResponse = await foodDB.insertMany(insertData);
+                const dbResponse = await foodDB.insertOne(insertData);
 
                 if (!dbResponse) {
                     const response = {
@@ -387,7 +387,7 @@ module.exports = {
             }
 
 
-            table.status = !table.status;
+            table.status = requestData.status;
             await table.save();
 
             const response = {
