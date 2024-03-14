@@ -452,7 +452,7 @@ module.exports = {
     },
     editTodaysMenuHelper:async (menuId, updatedData) => {
         try {
-            const menu = await TodaysMenu.findOneAndUpdate(
+            const menu = await todaysMenuDB.findOneAndUpdate(
                 { _id: menuId },
                 { $set: updatedData },
                 { new: true } 
@@ -475,7 +475,7 @@ module.exports = {
     
     deleteTodaysMenuHelper:async (menuId) => {
         try {
-            const deletedItem = await TodaysMenu.findByIdAndDelete(menuId);
+            const deletedItem = await todaysMenuDB.findByIdAndDelete(menuId);
     
             if (!deletedItem) {
                 return {

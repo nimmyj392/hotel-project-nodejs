@@ -485,7 +485,7 @@ module.exports = {
     
             const result = await userHelper.deleteTodaysMenuHelper(menuId);
     
-            res.status(500).json({ success: true, error: result, data: "Internal server error" })
+            res.status(500).json({ success: true, error: {}, data: result })
         } catch (error) {
             console.error("Error deleting today's menu item:", error);
             res.status(500).json({ success: false, error: true, data: "Internal server error" });
