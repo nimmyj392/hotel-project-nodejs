@@ -802,6 +802,24 @@ module.exports = {
             })
         }
     }),
+    updatePrice: (async (req, res) => {
+        const requestData = {
+            dishId: req.dishId,
+            price: req.body.price
+        }
+
+       
+    try {
+        
+
+        const result = await managerHelper.updatePriceHelper(requestData);
+
+        res.status(500).json({ success: true, error: false, data: result});
+    } catch (error) {
+        console.error("Error updating price:", error);
+        res.status(500).json({ success: false, error: true, data: "Internal server error" });
+    }
+    }),
     viewTable: (async (req, res) => {
 
         const requestData = {

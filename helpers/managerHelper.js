@@ -688,6 +688,36 @@ module.exports = {
 
 
     },
+    updatePriceHelper : async (requestData) => {
+        try {
+            const dish = await dishDB.findOne({ _id: requestData.dishId, deleted: false });
+    
+            if (!dish) {
+                return {
+                    success: false,
+                    data: "Document not found",
+                    error: true
+                };
+            }
+    
+            dish.price = requestData.price;
+            await dish.save();
+    
+            return {
+                success: true,
+                data: dish,
+                error: false
+            };
+        } catch (error) {
+            console.error("Error updating dish price:", error);
+            return {
+                success: false,
+                error: true,
+                data: "Internal server error"
+            };
+        }
+    },
+    
     viewTableHelper: (requestData) => {
 
         return new Promise(async (resolve, reject) => {

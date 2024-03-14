@@ -239,7 +239,7 @@ module.exports = {
                 return;
             }
             let startTime, endTime;
-
+    
             switch (requestData.category) {
                 case 'breakfast':
                     startTime = '09:00 AM';
@@ -256,10 +256,26 @@ module.exports = {
                 default:
                     console.log("Invalid category");
             }
-
+    
             try {
-
-
+            
+                const existingMenu = await todaysMenuDB.findOne({
+                    foodId: requestData.dishId,
+                    category: requestData.category,
+                    startTime: { $lte: new Date() }, 
+                    endTime: { $gte: new Date() }   
+                });
+    
+                if (existingMenu) {
+                    const response = {
+                        isSuccess: false,
+                        data: "Food item already added for today.",
+                        error: true
+                    };
+                    resolve(response);
+                    return;
+                }
+    
                 const foodItem = await dishDB.findById(requestData.dishId);
                 if (!foodItem) {
                     const response = {
@@ -270,8 +286,7 @@ module.exports = {
                     resolve(response);
                     return;
                 }
-
-
+    
                 const todaysMenu = new todaysMenuDB({
                     foodId: requestData.dishId,
                     category: requestData.category,
@@ -283,9 +298,9 @@ module.exports = {
                     name: foodItem.name,
                     description: foodItem.description
                 });
-
+    
                 const savedMenu = await todaysMenu.save();
-
+    
                 const response = {
                     isSuccess: true,
                     data: {
@@ -305,6 +320,7 @@ module.exports = {
             }
         });
     },
+    
     addTableHelper: (requestData) => {
 
         return new Promise(async (resolve, reject) => {
@@ -420,17 +436,67 @@ module.exports = {
                 const response = {
                     success: true,
                     data: menus,
+                    error:false
                 };
                 resolve(response);
             } catch (error) {
                 const response = {
                     success: false,
-                    message: 'Error fetching menu.',
+                    data: 'Error fetching menu.',
                     error: error,
                 };
                 reject(response);
             }
         });
+    },
+    editTodaysMenuHelper:async (menuId, updatedData) => {
+        try {
+            const menu = await TodaysMenu.findOneAndUpdate(
+                { _id: menuId },
+                { $set: updatedData },
+                { new: true } 
+            );
+    
+            return {
+                success: true,
+                data: menu,
+                error: false
+            };
+        } catch (error) {
+            console.error("Error updating today's menu:", error);
+            return {
+                success: false,
+                error: true,
+                data: "Internal server error"
+            };
+        }
+    },
+    
+    deleteTodaysMenuHelper:async (menuId) => {
+        try {
+            const deletedItem = await TodaysMenu.findByIdAndDelete(menuId);
+    
+            if (!deletedItem) {
+                return {
+                    success: false,
+                    data: "Document not found",
+                    error: true
+                };
+            }
+    
+            return {
+                success: true,
+                data: deletedItem,
+                error: false
+            };
+        } catch (error) {
+            console.error("Error deleting menu item:", error);
+            return {
+                success: false,
+                error: true,
+                message: "Internal server error"
+            };
+        }
     },
     
     
@@ -768,13 +834,13 @@ module.exports = {
                 createdAt: { $gte: today, $lt: tomorrow }
             });
     
-           
             const data = await Promise.all(orders.map(async order => {
                 const food = await foodDB.findById(order.items[0].foodId);
                 const supplier = await supplierDB.findById(order.supplierId);
                 const table = await tableDB.findById(order.tableId);
     
                 return {
+                    ...order.toObject(),
                     foodname: food ? food.name : 'Unknown',
                     suppliername: supplier ? supplier.name : 'Unknown',
                     tablename: table ? table.name : 'Unknown'
@@ -794,6 +860,7 @@ module.exports = {
             };
         }
     },
+    
     
     viewOrdersPendingHelper: async (requestData) => {
         return new Promise(async (resolve, reject) => {

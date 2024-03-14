@@ -9,8 +9,7 @@ const tableSchema = new Schema({
 
     status: {
 
-        type: String,
-        default:false
+        type: String
     },
     image: {
         type: Number,
