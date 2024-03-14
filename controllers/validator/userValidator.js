@@ -23,7 +23,28 @@ function addFoodByChefValidator(requestData) {
 
     } catch (exception) { }
 }
+function editTodaysMenuValidator(requestData) {
 
+    try {
+        const schema = Joi.object().keys({
+
+            name: Joi.string().required(),
+            menuId: Joi.string().required(),
+            stock: Joi.number().required()
+        })
+
+        const { error, value } = schema.validate(requestData);
+
+        if (error) {
+            return { error: error.details.map((x) => x.message).join(", ") };
+        } else if (value) {
+            return { value: value };
+        } else {
+            return { error: "something went wrong!!" }
+        }
+
+    } catch (exception) { }
+}
 function deleteFoodByChefValidator(requestData) {
 
     try {
@@ -335,5 +356,6 @@ module.exports = {
     forgotPasswordValidator,
     cancelOrderValidator,
     verifyOTPAndStoreUserValidator,
-    storeNewPasswordValidator
+    storeNewPasswordValidator,
+    editTodaysMenuValidator
 }

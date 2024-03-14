@@ -473,7 +473,15 @@ module.exports = {
                 name: req.body.name,
                 stock:req.body.stock
             }
-    
+           
+        const validatorResponse = await userDataValidator.editTodaysMenuValidator(requestData);
+        if (validatorResponse && validatorResponse.error) {
+            res.json({
+                isSuccess: false,
+                response: {},
+                error: validatorResponse.error
+            })
+        } else if (validatorResponse && validatorResponse.value) {
             const response = await userHelper.editTodaysMenuHelper(requestData );
     
             if (response.success) {
@@ -483,7 +491,7 @@ module.exports = {
                     error: false
                 });
             }
-        } catch (error) {
+        }} catch (error) {
             console.error("Error editing today's menu:", error);
             res.status(500).json({ success: false, error: true, data: "Internal server error" });
         }

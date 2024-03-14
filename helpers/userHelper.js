@@ -448,7 +448,7 @@ module.exports = {
     { $set: { name, stock } }, 
     { new: true }
             );
-    
+    console.log("menu",menu)
            
             const response = {
                 success: true,
