@@ -468,10 +468,13 @@ module.exports = {
 
     editTodaysMenu: async (req, res) => {
         try {
-            const { menuId } = req.body; 
-            const updatedData = req.body;
+            const requestData = {
+                menuId: req.body.menuId,
+                name: req.body.name,
+                stock:req.body.stock
+            }
     
-            const response = await userHelper.editTodaysMenuHelper(menuId, updatedData);
+            const response = await userHelper.editTodaysMenuHelper(requestData );
     
             if (response.success) {
                 res.json({

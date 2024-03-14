@@ -440,12 +440,13 @@ module.exports = {
             }
         });
     },
-    editTodaysMenuHelper:async (menuId, updatedData) => {
+    editTodaysMenuHelper:async (requestData ) => {
+        const { menuId, name, stock } = requestData;
         try {
             const menu = await todaysMenuDB.findOneAndUpdate(
                 { _id: menuId },
-                { $set: updatedData },
-                { new: true } 
+    { $set: { name, stock } }, 
+    { new: true }
             );
     
            
@@ -476,7 +477,8 @@ module.exports = {
                     error: true
                 };
             }
-    
+            deletedItem.deleted = true;
+            await deletedItem.save();
             const response = {
                 success: true,
                 data:deletedItem ,

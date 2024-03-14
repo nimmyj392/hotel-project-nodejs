@@ -33,6 +33,7 @@ router.get("/viewTable",verifyToken.verifyToken("manager"), managerController.vi
 router.get("/orderList",verifyToken.verifyToken("manager"), managerController.orderList)
 router.get("/payments",verifyToken.verifyToken("manager"), managerController.payments)
 router.get("/viewTodaysMenu",verifyToken.verifyToken("manager"), managerController.viewTodaysMenu)
+router.get("/updatePrice",verifyToken.verifyToken("manager"), managerController.updatePrice)
 module.exports = router
 
 

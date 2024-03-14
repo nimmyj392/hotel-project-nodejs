@@ -581,7 +581,7 @@ module.exports = {
                     success: false,
                     data: "document not found"
                 }
-                resolve(response)
+                reject(response)
                 return;
             } else {
 
@@ -589,7 +589,7 @@ module.exports = {
                     success: true,
                     data: result
                 }
-                reject(response)
+                resolve(response)
 
             }
 
