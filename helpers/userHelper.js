@@ -404,14 +404,14 @@ module.exports = {
     viewTodaysMenuHelper: () => {
         return new Promise(async (resolve, reject) => {
             try {
-                // Get today's date
+          
                 const today = new Date();
-                // Set the start of the day
+           
                 const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-                // Set the end of the day
+   
                 const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
     
-                // Query the database for menu items created today
+              
                 const menus = await todaysMenuDB.find({
                     createdAt: { $gte: startOfDay, $lt: endOfDay },
                     deleted: false
@@ -616,7 +616,7 @@ module.exports = {
                 totalPriceForItem: quantity * foodItem.price
             });
         
-            // Update total price by summing prices of all items in the order
+           
             existingOrder.totalPrice = existingOrder.items.reduce((total, item) => {
                 return total + item.totalPriceForItem;
             }, 0);
@@ -704,8 +704,7 @@ module.exports = {
     updateStatusBySupplierHelper:(orderId, newStatus) =>{
         return new Promise(async (resolve, reject) => {
         try {
-            // Find the order by its ID
-            const order = await orderDB.findById(orderId);
+           Id(orderId);
             if (!order) {
                 const response = {
                     success: false,
@@ -715,10 +714,9 @@ module.exports = {
                 reject(response) ;
             }
     
-            // Update the supplier status
+         
             order.supplierStatus = newStatus;
     
-            // Save the updated order
             await order.save();
             const response = {
                 success: true,
@@ -770,7 +768,7 @@ module.exports = {
                 createdAt: { $gte: today, $lt: tomorrow }
             });
     
-            // Fetch food names, supplier names, and table names
+           
             const data = await Promise.all(orders.map(async order => {
                 const food = await foodDB.findById(order.items[0].foodId);
                 const supplier = await supplierDB.findById(order.supplierId);
@@ -826,79 +824,74 @@ module.exports = {
     calculateBillHelper: async () => {
         return new Promise(async (resolve, reject) => {
             try {
-                const tables = await tableDB.find();
+                const orders = await orderDB.find({ supplierStatus: 'ready_to_payment' }).sort({ createdAt: -1 });
     
-                let responseArray = []; // Array to store responses for each table
-    
-                for (const table of tables) {
-                    const orders = await orderDB.find({ tableId: table._id, supplierStatus: 'ready_to_payment' }).sort({ createdAt: -1 });
-    
-                    let tableResponse = {
+                let responseArray = []; 
+                for (const order of orders) {
+                    let orderResponse = {
                         success: true,
-                        data: `Bill calculated successfully for table ${table.name}.`,
+                        data: `Bill calculated successfully for order ${order._id}.`,
                         error: false
                     };
     
-                    let paidAllOrders = true; // Flag to track if all orders for this table are paid
+                    const totalBillAmount = order.totalPrice;
     
-                    for (const order of orders) {
-                        const totalBillAmount = order.totalPrice;
-    
-                        if (totalBillAmount < 1) {
-                            tableResponse = {
-                                success: false,
-                                data: `Total bill amount for table ${table.name} must be at least INR 1.00`,
-                                error: true
-                            };
-                            continue;
-                        }
-    
-                        let unpaidItem;
-                        for (let i = order.items.length - 1; i >= 0; i--) {
-                            if (!order.items[i].paid) {
-                                unpaidItem = order.items[i];
-                                break;
-                            }
-                        }
-    
-                        if (!unpaidItem) {
-                            // If there are no unpaid items in the order, mark paidAllOrders as false and continue to the next order
-                            paidAllOrders = false;
-                            continue;
-                        }
-    
-                        // Process payment for the unpaid item
-                        const payment = new paymentDB({
-                            orderId: order._id,
-                            totalAmount: totalBillAmount,
-                            amountPaid: totalBillAmount,
-                            currency: 'INR',
-                            receipt: razorpayOrder.id,
-                            dishId: unpaidItem.foodId
-                        });
-    
-                        await payment.save();
-    
-                        // Mark the unpaid item as paid
-                        unpaidItem.paid = true;
-                        await order.save();
-    
-                        // Prepare response for successful payment
-                        tableResponse.razorpayOrder = {
-                            id: razorpayOrder.id,
-                            amount_paid: totalBillAmount
+                    if (totalBillAmount < 1) {
+                        orderResponse = {
+                            success: false,
+                            data: `Total bill amount for order ${order._id} must be at least INR 1.00`,
+                            error: true
                         };
+                        responseArray.push(orderResponse);
+                        continue;
                     }
     
-                    // If all orders for this table are already paid, update the response accordingly
-                    if (paidAllOrders) {
-                        tableResponse.data = `All orders for table ${table.name} are already paid.`;
+                    let unpaidItem;
+                    for (let i = order.items.length - 1; i >= 0; i--) {
+                        if (!order.items[i].paid) {
+                            unpaidItem = order.items[i];
+                            break;
+                        }
                     }
     
-                    responseArray.push(tableResponse); // Push the response for this table to the array
+                    if (!unpaidItem) {
+                        orderResponse.data = `All items in order ${order._id} are already paid.`;
+                        responseArray.push(orderResponse);
+                        continue;
+                    }
+    
+                    
+                    const payment = new paymentDB({
+                        orderId: order._id,
+                        totalAmount: totalBillAmount,
+                        amountPaid: totalBillAmount,
+                        currency: 'INR',
+                        receipt: razorpayOrder.id,
+                        dishId: unpaidItem.foodId
+                    });
+    
+                    await payment.save();
+    
+                   
+                    unpaidItem.paid = true;
+                    await order.save();
+    
+                   
+                    orderResponse.billDetails = {
+                        orderId: order._id,
+                        totalAmount: totalBillAmount,
+                        currency: 'INR'
+                    };
+    
+                    orderResponse.razorpayOrder = {
+                        id: razorpayOrder.id,
+                        amount_paid: totalBillAmount
+                    };
+    
+                    responseArray.push(orderResponse);
                 }
     
-                resolve(responseArray); // Resolve with the array containing responses for all tables
+                resolve(responseArray); 
     
             } catch (error) {
                 console.error('Error:', error);
@@ -907,7 +900,7 @@ module.exports = {
                     data: "An error occurred. Details: " + error.message,
                     error: true
                 };
-                resolve(response); // Resolve with the error response
+                resolve(response); 
             }
         })
     },

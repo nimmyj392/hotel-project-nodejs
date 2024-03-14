@@ -432,14 +432,14 @@ module.exports = {
 
     viewTodaysMenu: async (req, res) => {
         try {
-            // Get the current date
+         
             const currentDate = new Date();
-            // Set the start date to the beginning of the current day
+          
             const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), 0, 0, 0);
-            // Set the end date to the end of the current day
+      
             const endDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), 23, 59, 59);
     
-            // Call viewTodaysMenuHelper with the start and end dates
+            
             const response = await userHelper.viewTodaysMenuHelper(startDate, endDate);
     
             if (response.success) {
@@ -459,7 +459,7 @@ module.exports = {
             res.json({
                 isSuccess: false,
                 response: {},
-                error: error.message // Assuming error.message contains the error message
+                error: error.message 
             });
         }
     },
@@ -575,14 +575,14 @@ module.exports = {
     },
     viewOrderList: async (req, res) => {
         const today = new Date();
-        today.setHours(0, 0, 0, 0); // Set time to the beginning of the day
+        today.setHours(0, 0, 0, 0); 
         const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1); // Get tomorrow's date
+        tomorrow.setDate(tomorrow.getDate() + 1); 
     console.log("hdhd")
         const requestData = {
             createdAt: {
-                $gte: today, // Greater than or equal to today
-                $lt: tomorrow // Less than tomorrow
+                $gte: today, 
+                $lt: tomorrow 
             },
             deleted: false
         };
@@ -606,7 +606,7 @@ module.exports = {
             res.json({
                 isSuccess: false,
                 response: {},
-                error: error.message // You might want to handle error.message instead of error.data
+                error: error.message 
             });
         }
     },
@@ -648,7 +648,7 @@ module.exports = {
     },
   getServedOrders:async(req, res) =>{
         try {
-            // Call the helper function to get served orders
+         
             const servedOrders = await userHelper.getServedOrdersHelper();
     
             return res.status(200).json({
@@ -666,7 +666,7 @@ module.exports = {
     },
     getReadyToPaymentOrders:async(req, res) =>{
         try {
-            // Call the helper function to get served orders
+           
             const orders = await userHelper.getReadyToPaymentOrdersHelper();
     
             return res.status(200).json({
