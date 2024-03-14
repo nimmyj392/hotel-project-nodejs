@@ -260,11 +260,12 @@ module.exports = {
             try {
             
                 const existingMenu = await todaysMenuDB.findOne({
-                    foodId: requestData.dishId,
+                    name: requestData.name, 
                     category: requestData.category,
-                    startTime: { $lte: new Date() }, 
-                    endTime: { $gte: new Date() }   
+                    startTime: { $gte: new Date(new Date().setHours(0, 0, 0, 0)) },
+                    endTime: { $lte: new Date(new Date().setHours(23, 59, 59, 999)) }
                 });
+                
     
                 if (existingMenu) {
                     const response = {
