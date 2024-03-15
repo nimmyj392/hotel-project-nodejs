@@ -52,7 +52,7 @@ module.exports = {
                     preparedBy: requestData.preparedBy
                 };
 
-                const dbResponse = await foodDB.insertOne(insertData);
+                const dbResponse = await foodDB.insertMany(insertData);
 
                 if (!dbResponse) {
                     const response = {
