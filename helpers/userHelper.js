@@ -466,9 +466,10 @@ module.exports = {
         }
     },
     
-    deleteTodaysMenuHelper:async (menuId) => {
+    deleteTodaysMenuHelper: async (menuId) => {
         try {
-            const deletedItem = await todaysMenuDB.findByIdAndDelete(menuId);
+            const itemId = new mongoose.Types.ObjectId(menuId);
+            const deletedItem = await todaysMenuDB.findByIdAndDelete(itemId);
     
             if (!deletedItem) {
                 return {
@@ -477,14 +478,15 @@ module.exports = {
                     error: true
                 };
             }
+    
             deletedItem.deleted = true;
             await deletedItem.save();
-            const response = {
+    
+            return {
                 success: true,
-                data:deletedItem ,
-                error:false
+                data: deletedItem,
+                error: false
             };
-            return (response)
         } catch (error) {
             console.error("Error deleting menu item:", error);
             return {
@@ -494,7 +496,6 @@ module.exports = {
             };
         }
     },
-    
     
         orderListHelper: (requestDataFormatted) => {
 

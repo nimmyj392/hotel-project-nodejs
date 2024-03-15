@@ -500,8 +500,8 @@ module.exports = {
         try {
             console.log("req",req.body);
             const menuId = req.body.menuId 
-            const menuIdString = menuId.toString();
-            const response = await userHelper.deleteTodaysMenuHelper(menuIdString);
+           
+            const response = await userHelper.deleteTodaysMenuHelper(menuId);
     
             if (response.success) {
                 res.json({
