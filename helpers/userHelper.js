@@ -468,8 +468,11 @@ module.exports = {
     
     deleteTodaysMenuHelper: async (menuId) => {
         try {
-            const itemId = new mongoose.Types.ObjectId(menuId);
-            const deletedItem = await todaysMenuDB.findByIdAndDelete(itemId);
+            const deletedItem = await todaysMenuDB.findByIdAndUpdate(
+                menuId,
+                { deleted: true },
+                { new: true } 
+            );
     
             if (!deletedItem) {
                 return {
@@ -478,9 +481,6 @@ module.exports = {
                     error: true
                 };
             }
-    
-            deletedItem.deleted = true;
-            await deletedItem.save();
     
             return {
                 success: true,
@@ -497,66 +497,61 @@ module.exports = {
         }
     },
     
-        orderListHelper: (requestDataFormatted) => {
-
-       
-        return new Promise(async (resolve, reject) => {
-
-            const foodItem = await todaysMenuDB.findOne({ foodId: requestDataFormatted.foodId });
-            console.log("fooditem", foodItem)
-            if (!foodItem) {
-                const response = {
-                    success: false,
-                    data: "Food item not found.",
-                    error: true
-                };
-                reject(response);
-
+    
+        
+    orderListHelper: async (requestData) => {
+        try {
+            const items = [];
+            let totalPrice = 0;
+    
+            // Collect all items and calculate total price
+            for (const orderData of requestData.selectedDishes) {
+                const foodItem = await todaysMenuDB.findOne({ foodId: orderData.foodId });
+                if (!foodItem) {
+                    return {
+                        success: false,
+                        data: "Food item not found.",
+                        error: true
+                    };
+                }
+    
+                if (foodItem.stock < orderData.quantity) {
+                    return {
+                        success: false,
+                        data: "Insufficient stock for the requested quantity.",
+                        error: true
+                    };
+                }
+    
+                totalPrice += orderData.quantity * foodItem.price;
+    
+                items.push({
+                    foodId: orderData.foodId,
+                    foodName: foodItem.name,
+                    quantity: orderData.quantity,
+                    price: foodItem.price,
+                    totalPriceForItem: orderData.quantity * foodItem.price
+                });
             }
-
-            if (foodItem.stock <requestDataFormatted.quantity) {
-                const response = {
-                    success: false,
-                    data: "Insufficient stock for the requested quantity.",
-                    error: true
-                };
-                reject(response);
-
-            }
-
-            await todaysMenuDB.updateOne({ _id: foodItem._id }, { $inc: { stock: -requestDataFormatted.quantity } });
-
-            const totalPrice = requestDataFormatted.quantity * foodItem.price;
-
-
-            const items = [{
-                foodId: requestDataFormatted.foodId,
-                foodName: foodItem.name,
-                quantity: requestDataFormatted.quantity,
-                price: foodItem.price,
-                totalPriceForItem: requestDataFormatted.quantity * foodItem.price
-            }];
-
-
+    
             const newOrder = new orderDB({
-                tableId: requestDataFormatted.tableId,
+                tableId: requestData.tableId,
                 items: items,
-                supplierId: requestDataFormatted.supplierId,
+                supplierId: requestData.supplierId,
                 supplierStatus: 'ready_to_payment',
                 totalPrice: totalPrice
             });
+    
             const dbResponse = await newOrder.save();
-
+    
             if (!dbResponse) {
-                const response = {
+                return {
                     success: false,
                     data: "Failed to insert data into the database.",
                     error: true
                 };
-                reject(response);
             } else {
-
-                const response = {
+                return {
                     success: true,
                     data: {
                         order: {
@@ -570,12 +565,16 @@ module.exports = {
                     },
                     error: false
                 };
-                resolve(response)
             }
-
-
-        });
+        } catch (error) {
+            return {
+                success: false,
+                data: "Internal server error.",
+                error: true
+            };
+        }
     },
+    
     getAllOrdersForChefHelper: (requestData, today) => {
         return new Promise(async (resolve, reject) => {
             try {
@@ -832,13 +831,20 @@ module.exports = {
             });
     
             const data = await Promise.all(orders.map(async order => {
-                const food = await foodDB.findById(order.items[0].foodId);
+                let totalPrice = 0;
+    
+                // Calculate total price for each order
+                for (const item of order.items) {
+                    const food = await foodDB.findById(item.foodId);
+                    totalPrice += parseInt(food.price) * item.quantity;
+                }
+    
                 const supplier = await supplierDB.findById(order.supplierId);
                 const table = await tableDB.findById(order.tableId);
     
                 return {
                     ...order.toObject(),
-                    foodname: food ? food.name : 'Unknown',
+                    totalAmount: totalPrice, // Include total amount in the result
                     suppliername: supplier ? supplier.name : 'Unknown',
                     tablename: table ? table.name : 'Unknown'
                 };
@@ -857,7 +863,6 @@ module.exports = {
             };
         }
     },
-    
     
     viewOrdersPendingHelper: async (requestData) => {
         return new Promise(async (resolve, reject) => {

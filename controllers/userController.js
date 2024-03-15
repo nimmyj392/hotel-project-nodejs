@@ -9,6 +9,7 @@ const supplierDB = require("../models/userModels/supplierSchema")
 const chefDB = require("../models/userModels/chefSchema")
 const cashierDB = require("../models/userModels/cashierSchema")
 const otpDB = require("../models/otpSchema")
+const mongoose = require('mongoose');
 
 const { orderListHelper } = require('../helpers/userHelper')
 
@@ -259,7 +260,7 @@ module.exports = {
                     error: error.data
                 });
             }
-            // }
+          
         }
 
         res.json(responses);
@@ -498,8 +499,10 @@ module.exports = {
     },
     deleteTodaysMenu: async (req, res) => {
         try {
-            console.log("req",req.body);
-            const menuId = req.body.menuId 
+            console.log("req", req.body);
+            const menuId = req.body.menuId;
+    
+            // Ensure menuId is valid
             if (!menuId) {
                 return res.status(400).json({
                     isSuccess: false,
@@ -508,7 +511,7 @@ module.exports = {
                 });
             }
     
-         
+            // Check if menuId is a valid ObjectId
             if (!mongoose.Types.ObjectId.isValid(menuId)) {
                 return res.status(400).json({
                     isSuccess: false,
@@ -516,70 +519,74 @@ module.exports = {
                     error: true
                 });
             }
+    
             const response = await userHelper.deleteTodaysMenuHelper(menuId);
     
             if (response.success) {
-                res.json({
+                return res.json({
                     isSuccess: true,
                     response: response.data,
                     error: false
                 });
+            } else {
+                console.log("Error deleting today's menu item:", response.error);
+                return res.status(500).json({
+                    isSuccess: false,
+                    response: "Error deleting today's menu item.",
+                    error: response.error
+                });
             }
-            console.log("res",response.data)
         } catch (error) {
             console.error("Error deleting today's menu item:", error);
-            res.json({
-                isSuccess: true,
-                response: response.data,
-                error: "Error deleting today's menu item:",error
+            return res.status(500).json({
+                isSuccess: false,
+                response: "Internal server error.",
+                error: error.message
             });
         }
     },
     orderList: async (req, res) => {
         try {
-       
-
             const requestData = {
                 selectedDishes: req.body.selectedDishes,
                 tableId: req.body.tableId,
                 supplierId: req.userId
-            }
+            };
+    
             const invalidOrder = requestData.selectedDishes.find(dish => !dish.quantity);
-            console.log("invalidOrder")
             if (invalidOrder) {
-
-                res.json({
+                return res.json({
                     isSuccess: false,
                     response: {},
                     error: "Quantity is missing for a dish."
                 });
             }
-
-            const responses = [];
-
-            for (const orderData of requestData.selectedDishes) {
-                orderData.tableId = requestData.tableId;
-                orderData.supplierId = req.userId;
-
-
-                const response = await userHelper.orderListHelper(orderData);
-                console.log("response", response)
-                responses.push(response);
+    
+            const response = await userHelper.orderListHelper(requestData);
+            
+            if (response.success) {
+                return res.json({
+                    isSuccess: true,
+                    response: response.data,
+                    error: false
+                });
+            } else {
+                return res.json({
+                    isSuccess: false,
+                    response: {},
+                    error: response.data
+                });
             }
-
-            res.json({
-                isSuccess: true,
-                response: responses,
-                error: false
-            });
         } catch (error) {
-            res.json({
+            return res.json({
                 isSuccess: false,
                 response: {},
                 error: error.data
             });
         }
-    }, 
+    },
+    
+    
 
 
 
