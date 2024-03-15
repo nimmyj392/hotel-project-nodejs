@@ -804,7 +804,7 @@ module.exports = {
     }),
     updatePrice: (async (req, res) => {
         const requestData = {
-            dishId: req.dishId,
+            dishId: req.body.dishId,
             price: req.body.price
         }
 
@@ -814,10 +814,29 @@ module.exports = {
 
         const result = await managerHelper.updatePriceHelper(requestData);
 
-        res.status(500).json({ success: true, error: false, data: result});
+        if (result) {
+            res.json({
+                isSuccess: true,
+                response: result,
+                error: false
+            })
+        }
+        else {
+            res.json({
+                isSuccess: false,
+                response: {},
+                error: "error adding price"
+            })
+        }
     } catch (error) {
         console.error("Error updating price:", error);
-        res.status(500).json({ success: false, error: true, data: "Internal server error" });
+        
+            res.json({
+                isSuccess: false,
+                response: {},
+                error: "error",error
+            })
+        
     }
     }),
     viewTable: (async (req, res) => {
