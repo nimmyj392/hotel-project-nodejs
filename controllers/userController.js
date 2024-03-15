@@ -499,9 +499,9 @@ module.exports = {
     deleteTodaysMenu: async (req, res) => {
         try {
             console.log("req",req.body);
-            const menuId = req.body; 
-    
-            const response = await userHelper.deleteTodaysMenuHelper(menuId);
+            const menuId = req.body.menuId 
+            const menuIdString = menuId.toString();
+            const response = await userHelper.deleteTodaysMenuHelper(menuIdString);
     
             if (response.success) {
                 res.json({
