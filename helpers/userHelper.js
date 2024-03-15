@@ -833,7 +833,6 @@ module.exports = {
             const data = await Promise.all(orders.map(async order => {
                 let totalPrice = 0;
     
-                // Calculate total price for each order
                 for (const item of order.items) {
                     const food = await foodDB.findById(item.foodId);
                     totalPrice += parseInt(food.price) * item.quantity;
@@ -844,7 +843,7 @@ module.exports = {
     
                 return {
                     ...order.toObject(),
-                    totalAmount: totalPrice, // Include total amount in the result
+                    totalAmount: totalPrice,
                     suppliername: supplier ? supplier.name : 'Unknown',
                     tablename: table ? table.name : 'Unknown'
                 };
@@ -891,7 +890,7 @@ module.exports = {
         });
     },
     calculateBillHelper: async () => {
-        return new Promise(async (resolve, reject) => {
+        return  new Promise(async (resolve, reject) => {
             try {
                 const orders = await orderDB.find({ supplierStatus: 'ready_to_payment' }).sort({ createdAt: -1 });
     
@@ -929,23 +928,23 @@ module.exports = {
                         continue;
                     }
     
-                    
+                    // Generate Razorpay order
+                    const razorpayOrder = await razorpay.orders.create({ amount: totalBillAmount * 100, currency: 'INR' });
+    
                     const payment = new paymentDB({
                         orderId: order._id,
                         totalAmount: totalBillAmount,
                         amountPaid: totalBillAmount,
                         currency: 'INR',
-                        receipt: razorpayOrder.id,
+                        receipt: razorpayOrder.id, // Use razorpayOrder.id here
                         dishId: unpaidItem.foodId
                     });
     
                     await payment.save();
     
-                   
                     unpaidItem.paid = true;
                     await order.save();
     
-                   
                     orderResponse.billDetails = {
                         orderId: order._id,
                         totalAmount: totalBillAmount,
@@ -973,6 +972,7 @@ module.exports = {
             }
         })
     },
+    
     
     collectPaymentByCashHelper: async () => {
         return new Promise(async (resolve, reject) => {
