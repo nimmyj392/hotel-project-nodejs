@@ -108,7 +108,7 @@ module.exports = {
     }),
 
     editMyDish: (async (req, res) => {
-        console.log("req", req)
+       
         const requestData = {
             dishId: req.body.dishId,
             name: req.body.name,
@@ -164,7 +164,7 @@ module.exports = {
                 isSuccess: false,
                 response: {},
                 error: validatorResponse.error
-            })
+            }) 
         }
         else if (validatorResponse && validatorResponse.value) {
             userHelper.deleteFoodByChefHelper(requestData).then((response) => {

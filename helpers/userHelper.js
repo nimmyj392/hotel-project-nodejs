@@ -46,7 +46,7 @@ module.exports = {
             } else {
                 let data = {
                     name: requestData.name,
-                    description: requestData.description,
+                     description: requestData.description,
                     image: requestData.image,
                     category: requestData.category,
                     preparedBy: requestData.preparedBy
