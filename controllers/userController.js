@@ -500,7 +500,22 @@ module.exports = {
         try {
             console.log("req",req.body);
             const menuId = req.body.menuId 
-           
+            if (!menuId) {
+                return res.status(400).json({
+                    isSuccess: false,
+                    response: "Menu ID is required.",
+                    error: true
+                });
+            }
+    
+         
+            if (!mongoose.Types.ObjectId.isValid(menuId)) {
+                return res.status(400).json({
+                    isSuccess: false,
+                    response: "Invalid menu ID.",
+                    error: true
+                });
+            }
             const response = await userHelper.deleteTodaysMenuHelper(menuId);
     
             if (response.success) {
