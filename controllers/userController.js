@@ -498,7 +498,7 @@ module.exports = {
     },
     deleteTodaysMenu: async (req, res) => {
         try {
-            const { menuId } = req.body; 
+            const menuId = req.body; 
     
             const response = await userHelper.deleteTodaysMenuHelper(menuId);
     
@@ -509,9 +509,14 @@ module.exports = {
                     error: false
                 });
             }
+            console.log("res",response.data)
         } catch (error) {
             console.error("Error deleting today's menu item:", error);
-            res.status(500).json({ success: false, error: true, data: "Internal server error" });
+            res.json({
+                isSuccess: true,
+                response: response.data,
+                error: "Error deleting today's menu item:",error
+            });
         }
     },
     orderList: async (req, res) => {

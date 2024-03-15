@@ -490,7 +490,7 @@ module.exports = {
             return {
                 success: false,
                 error: true,
-                message: "Internal server error"
+                data: "Internal server error"
             };
         }
     },
