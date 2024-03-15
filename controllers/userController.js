@@ -498,6 +498,7 @@ module.exports = {
     },
     deleteTodaysMenu: async (req, res) => {
         try {
+            console.log("req",req.body);
             const menuId = req.body; 
     
             const response = await userHelper.deleteTodaysMenuHelper(menuId);
