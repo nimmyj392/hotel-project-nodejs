@@ -44,7 +44,7 @@ module.exports = {
                 };
                 reject(response);
             } else {
-                let insertData = {
+                let data = {
                     name: requestData.name,
                     description: requestData.description,
                     image: requestData.image,
@@ -52,7 +52,7 @@ module.exports = {
                     preparedBy: requestData.preparedBy
                 };
 
-                const dbResponse = await foodDB.insertMany(insertData);
+                const dbResponse = await foodDB.insertMany(data);
 
                 if (!dbResponse) {
                     const response = {
