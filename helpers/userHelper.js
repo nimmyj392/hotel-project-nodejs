@@ -763,38 +763,42 @@ module.exports = {
     },
     
     
-    updateStatusBySupplierHelper:(orderId, newStatus) =>{
+    updateStatusBySupplierHelper: (orderId, newStatus) => {
         return new Promise(async (resolve, reject) => {
-        try {
-           Id(orderId);
-            if (!order) {
+            try {
+             
+                const order = await orderDB.findById(orderId);
+    
+                if (!order) {
+                    const response = {
+                        success: false,
+                        data: "Order not found",
+                        error: true
+                    };
+                    reject(response);
+                }
+    
+                
+                order.supplierStatus = newStatus;
+    
+             
+                await order.save();
+    
+                const response = {
+                    success: true,
+                    data: order,
+                    error: false
+                };
+                resolve(response);
+            } catch (error) {
                 const response = {
                     success: false,
-                    data: "Order not found",
+                    data: error.message,
                     error: true
                 };
-                reject(response) ;
+                reject(response);
             }
-    
-         
-            order.supplierStatus = newStatus;
-    
-            await order.save();
-            const response = {
-                success: true,
-                data: order,
-                error: false
-            };
-            resolve(response) ;
-        } catch (error) {
-            const response = {
-                success: false,
-                data: error.message,
-                error: true
-            };
-            reject(response) ;
-        }
-    })
+        });
     },
     
    getServedOrdersHelper: async () => {
