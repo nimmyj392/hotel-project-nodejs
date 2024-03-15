@@ -820,8 +820,7 @@ module.exports = {
             };
             reject(response) ;
         }
-    },
-    getReadyToPaymentOrdersHelper: async () => {
+    },getReadyToPaymentOrdersHelper: async () => {
         try {
             const today = new Date();
             today.setHours(0, 0, 0, 0); 
@@ -837,9 +836,18 @@ module.exports = {
             const data = await Promise.all(orders.map(async order => {
                 let totalPrice = 0;
     
-                for (const item of order.items) {
+                // Fetch foodname for each item in the order
+                const itemsWithFoodName = await Promise.all(order.items.map(async item => {
                     const food = await foodDB.findById(item.foodId);
-                    totalPrice += parseInt(food.price) * item.quantity;
+                    return {
+                        ...item.toObject(),
+                        foodname: food ? food.name : 'Unknown'
+                    };
+                }));
+    
+                // Calculate total price and other details for the order
+                for (const item of itemsWithFoodName) {
+                    totalPrice += parseInt(item.price) * item.quantity;
                 }
     
                 const supplier = await supplierDB.findById(order.supplierId);
@@ -847,6 +855,7 @@ module.exports = {
     
                 return {
                     ...order.toObject(),
+                    items: itemsWithFoodName, // Replace items with itemsWithFoodName
                     totalAmount: totalPrice,
                     suppliername: supplier ? supplier.name : 'Unknown',
                     tablename: table ? table.name : 'Unknown'
@@ -866,6 +875,7 @@ module.exports = {
             };
         }
     },
+    
     
     viewOrdersPendingHelper: async (requestData) => {
         return new Promise(async (resolve, reject) => {
