@@ -246,16 +246,17 @@ module.exports = {
                 default:
                     console.log("Invalid category");
             }
-    
             try {
-            
-                const existingMenu = await todaysMenuDB.findOne({
-                    name: requestData.name, 
-                    category: requestData.category,
-                    startTime: { $gte: new Date(new Date().setHours(0, 0, 0, 0)) },
-                    endTime: { $lte: new Date(new Date().setHours(23, 59, 59, 999)) }
-                });
+                const startOfDay = new Date().setHours(0, 0, 0, 0);
+                const endOfDay = new Date().setHours(23, 59, 59, 999);
+    
                 
+                const existingMenu = await todaysMenuDB.findOne({
+                    foodId: requestData.dishId,
+                    category: requestData.category,
+                    startTime: { $gte: startOfDay },
+                    endTime: { $lte: endOfDay }
+                });
     
                 if (existingMenu) {
                     const response = {
@@ -303,7 +304,7 @@ module.exports = {
                 };
                 resolve(response);
             } catch (error) {
-                resolve({
+                reject({
                     isSuccess: false,
                     data: error.message || "An error occurred",
                     error: true
@@ -504,7 +505,7 @@ module.exports = {
             const items = [];
             let totalPrice = 0;
     
-            // Collect all items and calculate total price
+            
             for (const orderData of requestData.selectedDishes) {
                 const foodItem = await todaysMenuDB.findOne({ foodId: orderData.foodId });
                 if (!foodItem) {
@@ -538,7 +539,7 @@ module.exports = {
                 tableId: requestData.tableId,
                 items: items,
                 supplierId: requestData.supplierId,
-                supplierStatus: 'ready_to_payment',
+                supplierStatus: requestData.supplierStatus,
                 totalPrice: totalPrice
             });
     
@@ -566,6 +567,36 @@ module.exports = {
                     error: false
                 };
             }
+        } catch (error) {
+            return {
+                success: false,
+                data: "Internal server error.",
+                error: true
+            };
+        }
+    },
+ updateSupplierStatusHelper : async (requestData) => {
+        try {
+      
+            const updatedSupplier = await supplierDB.findByIdAndUpdate(
+                requestData.supplierId,
+                { supplierStatus: requestData.newStatus },
+                { new: true }
+            );
+    
+            if (!updatedSupplier) {
+                return {
+                    success: false,
+                    data: "Supplier not found or failed to update status.",
+                    error: true
+                };
+            }
+    
+            return {
+                success: true,
+                data: updatedSupplier,
+                error:false
+            };
         } catch (error) {
             return {
                 success: false,

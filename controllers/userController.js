@@ -550,6 +550,7 @@ module.exports = {
             const requestData = {
                 selectedDishes: req.body.selectedDishes,
                 tableId: req.body.tableId,
+                supplierStatus: re.body.supplierStatus,
                 supplierId: req.userId
             };
     
@@ -586,12 +587,36 @@ module.exports = {
         }
     },
     
+    updateSupplierStatus: async (req, res) => {
+        try {
+            const requestData = {
+                supplierId: req.userId,
+                newStatus: req.body.newStatus, 
+            };
     
-
-
-
-
-
+            const response = await userHelper.updateSupplierStatusHelper(requestData);
+    
+            if (response.success) {
+                return res.json({
+                    isSuccess: true,
+                    response: response.data,
+                    error: false
+                });
+            } else {
+                return res.json({
+                    isSuccess: false,
+                    response: {},
+                    error: response.data
+                });
+            }
+        } catch (error) {
+            return res.json({
+                isSuccess: false,
+                response: {},
+                error: error.data
+            });
+        }
+    },    
     getAllOrdersForChef: async (req, res) => {
         const requestData = {
             deleted: false
