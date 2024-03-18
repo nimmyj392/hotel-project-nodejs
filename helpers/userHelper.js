@@ -247,13 +247,11 @@ module.exports = {
                     console.log("Invalid category");
             }
             try {
-                const startOfDay = new Date().setHours(0, 0, 0, 0);
-                const endOfDay = new Date().setHours(23, 59, 59, 999);
+             
     
                 const existingMenu = await todaysMenuDB.findOne({
                     name: requestData.name,
-                    startTime: { $gte: startOfDay },
-                    endTime: { $lte: endOfDay }
+                    date: new Date().toISOString().split('T')[0] 
                 });
     
                 if (existingMenu) {
