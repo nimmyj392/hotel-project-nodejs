@@ -106,7 +106,7 @@ module.exports = {
                         res.json({
                             isSuccess: false,
                             response: {},
-                            error: error
+                            error: error.data
                         });
                     });
             }
@@ -200,7 +200,7 @@ module.exports = {
                 res.json({
 
                     isSuccess: true,
-                    response: response,
+                    response: response.data,
                     error: false
                 })
             } else {
@@ -303,7 +303,7 @@ module.exports = {
                 res.json({
 
                     isSuccess: true,
-                    response: response,
+                    response: response.data,
                     error: false
                 })
             } else {
@@ -398,7 +398,7 @@ module.exports = {
                 res.json({
 
                     isSuccess: true,
-                    response: response,
+                    response: response.data,
                     error: false
                 })
             } else {
@@ -814,10 +814,10 @@ module.exports = {
 
         const result = await managerHelper.updatePriceHelper(requestData);
 
-        if (result) {
+        if (result.success) {
             res.json({
                 isSuccess: true,
-                response: result,
+                response: result.data,
                 error: false
             })
         }
@@ -825,7 +825,7 @@ module.exports = {
             res.json({
                 isSuccess: false,
                 response: {},
-                error: "error adding price"
+                error: error.data
             })
         }
     } catch (error) {
@@ -834,7 +834,7 @@ module.exports = {
             res.json({
                 isSuccess: false,
                 response: {},
-                error: "error",error
+                error: error.data
             })
         
     }
@@ -872,21 +872,21 @@ module.exports = {
         // })
 
     }),
-    orderList: async (req, res) => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0); 
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1); 
-        const requestData = {
-            createdAt: {
-                $gte: today, 
-                $lt: tomorrow 
-            },
-            deleted: false
-        };
-    
-        try {
-            const response = await managerHelper.orderListHelper(requestData);
+   orderList: (req, res) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const requestData = {
+        createdAt: {
+            $gte: today,
+            $lt: tomorrow
+        },
+        deleted: false
+    };
+
+    managerHelper.orderListHelper(requestData)
+        .then(response => {
             if (response.success) {
                 res.json({
                     isSuccess: true,
@@ -900,14 +900,15 @@ module.exports = {
                     error: response.data
                 });
             }
-        } catch (error) {
+        })
+        .catch(error => {
             res.json({
                 isSuccess: false,
                 response: {},
-                error: error.message 
+                error: error.message
             });
-        }
-    },
+        });
+},
     payments: (async (req, res) => {
 
         const requestData = {

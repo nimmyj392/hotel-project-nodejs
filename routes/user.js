@@ -27,6 +27,7 @@ router.get("/viewTodaysMenuByChef",verifyToken.verifyToken("chef"),userControlle
 router.patch("/editTodaysMenu",verifyToken.verifyToken("chef"),userController.editTodaysMenu)
 router.delete("/deleteTodaysMenu",verifyToken.verifyToken("chef"),userController.deleteTodaysMenu)
 router.post("/orderList",verifyToken.verifyToken("supplier"),userController.orderList)
+router.post("/updateSupplierStatus",verifyToken.verifyToken("supplier"),userController.updateSupplierStatus)
 router.get("/getAllOrdersForChef",verifyToken.verifyToken("chef"),userController.getAllOrdersForChef)
 router.get("/viewOrdersPending",verifyToken.verifyToken("supplier"),userController.viewOrdersPending)
 router.post("/calculateBill",verifyToken.verifyToken("cashier"),userController.calculateBill)

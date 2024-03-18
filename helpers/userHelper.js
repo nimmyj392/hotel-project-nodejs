@@ -57,7 +57,7 @@ module.exports = {
                 if (!dbResponse) {
                     const response = {
                         success: false,
-                        message: "Failed to insert food into the database.",
+                        data: "Failed to insert food into the database.",
                         error: true
                     };
                     resolve(response);
@@ -92,7 +92,7 @@ module.exports = {
 
                 console.log("No dishes found for the user");
                 const response = {
-                    success: true,
+                    success: false,
                     data: "No dishes found for the user"
                 };
                 reject(response);
@@ -346,7 +346,7 @@ module.exports = {
                         success: false,
                         data: dbResponse
                     }
-                    resolve(response)
+                    reject(response)
                     return;
                 }
             })
@@ -393,8 +393,6 @@ module.exports = {
                 reject(response);
                 return;
             }
-
-
             table.status = requestData.status;
             await table.save();
 
@@ -421,7 +419,7 @@ module.exports = {
     
               
                 const menus = await todaysMenuDB.find({
-                    createdAt: { $gte: startOfDay, $lt: endOfDay },
+                    createdAt: { $gte: startOfDay, $lte: endOfDay },
                     deleted: false
                 });
     
@@ -560,7 +558,7 @@ module.exports = {
                             items: dbResponse.items.map(item => ({
                                 ...item.toObject(),
                                 itemPrice: item.quantity * item.price
-                            }))
+                            })) 
                         },
                         totalPrice: totalPrice
                     },
@@ -833,8 +831,9 @@ module.exports = {
     },
     
    getServedOrdersHelper: async () => {
+    return new Promise(async (resolve, reject) => {
         try {
-            // Query the database for orders with "served" status
+           
             const servedOrders = await orderDB.find({ supplierStatus: 'served' });
     
             const response = {
@@ -850,8 +849,9 @@ module.exports = {
                 error: true
             };
             reject(response) ;
-        }
-    },getReadyToPaymentOrdersHelper: async () => {
+        }})
+    },
+    getReadyToPaymentOrdersHelper: async () => {
         try {
             const today = new Date();
             today.setHours(0, 0, 0, 0); 
@@ -867,7 +867,7 @@ module.exports = {
             const data = await Promise.all(orders.map(async order => {
                 let totalPrice = 0;
     
-                // Fetch foodname for each item in the order
+           
                 const itemsWithFoodName = await Promise.all(order.items.map(async item => {
                     const food = await foodDB.findById(item.foodId);
                     return {
@@ -876,7 +876,7 @@ module.exports = {
                     };
                 }));
     
-                // Calculate total price and other details for the order
+              
                 for (const item of itemsWithFoodName) {
                     totalPrice += parseInt(item.price) * item.quantity;
                 }
@@ -886,9 +886,7 @@ module.exports = {
     
                 return {
                     ...order.toObject(),
-                    items: itemsWithFoodName, // Replace items with itemsWithFoodName
-                    totalAmount: totalPrice,
-                    suppliername: supplier ? supplier.name : 'Unknown',
+                    items: itemsWithFoodName, 
                     tablename: table ? table.name : 'Unknown'
                 };
             }));
@@ -973,7 +971,7 @@ module.exports = {
                         continue;
                     }
     
-                    // Generate Razorpay order
+                 
                     const razorpayOrder = await razorpay.orders.create({ amount: totalBillAmount * 100, currency: 'INR' });
     
                     const payment = new paymentDB({
@@ -981,7 +979,7 @@ module.exports = {
                         totalAmount: totalBillAmount,
                         amountPaid: totalBillAmount,
                         currency: 'INR',
-                        receipt: razorpayOrder.id, // Use razorpayOrder.id here
+                        receipt: razorpayOrder.id, 
                         dishId: unpaidItem.foodId
                     });
     
@@ -1013,7 +1011,7 @@ module.exports = {
                     data: "An error occurred. Details: " + error.message,
                     error: true
                 };
-                resolve(response); 
+                reject(response); 
             }
         })
     },

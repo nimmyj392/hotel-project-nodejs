@@ -42,11 +42,11 @@ module.exports = {
         } else if (validatorResponse && validatorResponse.value) {
             userHelper.addFoodByChefHelper(requestData).then((response) => {
 
-                if (response) {
+                if (response.success) {
                     res.json({
 
                         isSuccess: true,
-                        response: response,
+                        response: response.data,
                         error: false
                     })
                 } else {
@@ -86,7 +86,7 @@ module.exports = {
                     res.json({
 
                         isSuccess: true,
-                        response: response,
+                        response: response.data,
                         error: false
                     })
                 } else {
@@ -328,7 +328,7 @@ module.exports = {
                     res.json({
 
                         isSuccess: true,
-                        response: response,
+                        response: response.data,
                         error: false
                     })
                 } else {
@@ -402,11 +402,11 @@ module.exports = {
         } else if (validatorResponse && validatorResponse.value) {
             userHelper.selectOrDeselectTableHelper(requestData).then((response) => {
 
-                if (response) {
+                if (response.success) {
                     res.json({
 
                         isSuccess: true,
-                        response: response,
+                        response: response.data,
                         error: false
                     })
                 } else {
@@ -460,7 +460,7 @@ module.exports = {
             res.json({
                 isSuccess: false,
                 response: {},
-                error: error.message 
+                error: error
             });
         }
     },
@@ -494,7 +494,7 @@ module.exports = {
             }
         }} catch (error) {
             console.error("Error editing today's menu:", error);
-            res.status(500).json({ success: false, error: true, data: "Internal server error" });
+            res.status(500).json({ isSuccess: false, error: "Internal server error", response: {} });
         }
     },
     deleteTodaysMenu: async (req, res) => {
@@ -502,7 +502,7 @@ module.exports = {
             console.log("req", req.body);
             const menuId = req.body.menuId;
     
-            // Ensure menuId is valid
+        
             if (!menuId) {
                 return res.status(400).json({
                     isSuccess: false,
@@ -511,7 +511,6 @@ module.exports = {
                 });
             }
     
-            // Check if menuId is a valid ObjectId
             if (!mongoose.Types.ObjectId.isValid(menuId)) {
                 return res.status(400).json({
                     isSuccess: false,
@@ -648,38 +647,45 @@ module.exports = {
             });
         });
     },
+    addFoodInOrderList: (req, res) => {
+        const { orderId, foodId, quantity } = req.body;
     
- addFoodInOrderList:async (req, res)  =>{
-        try {
-            const { orderId, foodId, quantity } = req.body;
-    
-            if (!orderId || !foodId || !quantity) {
-                return res.status(400).json({
-                    success: false,
-                    error: "Missing required fields: orderId, foodId, quantity"
-                });
-            }
-    
-            const updatedOrder = await userHelper.addFoodInOrderListHelper(orderId, foodId, quantity);
-    
-            return res.status(200).json({
-                success: true,
-                data: updatedOrder,
-                message: "Food item added to order successfully"
-            });
-        } catch (error) {
-            return res.status(500).json({
-                success: false,
-                error: error.message
+        if (!orderId || !foodId || !quantity) {
+            return res.status(400).json({
+                isSuccess: false,
+                error: "Missing required fields: orderId, foodId, quantity"
             });
         }
+    
+        userHelper.addFoodInOrderListHelper(orderId, foodId, quantity)
+            .then(response => {
+                if (response.success) {
+                    return res.status(200).json({
+                        isSuccess: true,
+                        response: response.data,
+                        error: false
+                    });
+                } else {
+                    return res.status(400).json({
+                        isSuccess: false,
+                        error: response.data
+                    });
+                }
+            })
+            .catch(error => {
+                return res.status(500).json({
+                    isSuccess: false,
+                    error: error.message
+                });
+            });
     },
+    
     viewOrderList: async (req, res) => {
         const today = new Date();
         today.setHours(0, 0, 0, 0); 
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1); 
-    console.log("hdhd")
+ 
         const requestData = {
             createdAt: {
                 $gte: today, 
@@ -747,24 +753,31 @@ module.exports = {
             });
         }
     },
-  getServedOrders:async(req, res) =>{
-        try {
-         
-            const servedOrders = await userHelper.getServedOrdersHelper();
-    
-            return res.status(200).json({
-                success: true,
-                data: servedOrders,
-                error:false          
+    getServedOrders: (req, res) => {
+        userHelper.getServedOrdersHelper()
+            .then(response => {
+                if (response.success) {
+                    return res.status(200).json({
+                        success: true,
+                        data: response.data,
+                        error: false
+                    });
+                } else {
+                    return res.status(400).json({
+                        success: false,
+                        error: response.data
+                    });
+                }
+            })
+            .catch(error => {
+                return res.status(500).json({
+                    success: false,
+                    response: {},
+                    error: error.message
+                });
             });
-        } catch (error) {
-            return res.status(500).json({
-                success: false,
-                response:{},
-                error: error.message
-            });
-        }
     },
+    
     getReadyToPaymentOrders:async(req, res) =>{
         try {
            
@@ -783,49 +796,49 @@ module.exports = {
             });
         }
     },
-    viewOrdersServed: (async (req, res) => {
-        const requestData = {
-            cashierId: req.userId
+    // viewOrdersServed: (async (req, res) => {
+    //     const requestData = {
+    //         cashierId: req.userId
 
-        }
+    //     }
 
-        // const validatorResponse = await managerDataValidator.viewChefValidator(requestData);
-        // if (validatorResponse && validatorResponse.error) {
-        //     res.json({
-        //         isSuccess: false,
-        //         response: validatorResponse.error,
-        //         error: true
-        //     })
-        // } else if (validatorResponse && validatorResponse.value) {
-        userHelper.viewOrdersServedHelper(requestData, orderListHelper)
-            .then((response) => {
+    //     // const validatorResponse = await managerDataValidator.viewChefValidator(requestData);
+    //     // if (validatorResponse && validatorResponse.error) {
+    //     //     res.json({
+    //     //         isSuccess: false,
+    //     //         response: validatorResponse.error,
+    //     //         error: true
+    //     //     })
+    //     // } else if (validatorResponse && validatorResponse.value) {
+    //     userHelper.viewOrdersServedHelper(requestData, orderListHelper)
+    //         .then((response) => {
 
-                if (response) {
+    //             if (response) {
 
-                    res.json({
+    //                 res.json({
 
-                        isSuccess: true,
-                        response: response,
-                        error: false
-                    })
-                } else {
+    //                     isSuccess: true,
+    //                     response: response,
+    //                     error: false
+    //                 })
+    //             } else {
 
-                    res.json({
-                        isSuccess: false,
-                        response: {},
-                        error: response.data
-                    })
-                }
-            }).catch(error => {
-                console.error('Error fetching dish', error);
-                res.json({
-                    isSuccess: false,
-                    response: {},
-                    error: error
-                });
-            });
+    //                 res.json({
+    //                     isSuccess: false,
+    //                     response: {},
+    //                     error: response.data
+    //                 })
+    //             }
+    //         }).catch(error => {
+    //             console.error('Error fetching dish', error);
+    //             res.json({
+    //                 isSuccess: false,
+    //                 response: {},
+    //                 error: error
+    //             });
+    //         });
 
-    }),
+    // }),
     viewOrdersPending: (async (req, res) => {
 
 
@@ -837,7 +850,7 @@ module.exports = {
                     res.json({
 
                         isSuccess: true,
-                        response: response,
+                        response: response.data,
                         error: false
                     })
                 } else {
@@ -853,7 +866,7 @@ module.exports = {
                 res.json({
                     isSuccess: false,
                     response: {},
-                    error: error
+                    error: error.data
                 });
             });
 
@@ -898,7 +911,7 @@ module.exports = {
                 res.json({
                     isSuccess: false,
                     response: {},
-                    error: error
+                    error: error.data
                 });
             });
 
@@ -909,12 +922,12 @@ module.exports = {
         userHelper.collectPaymentByCashHelper()
             .then((response) => {
 
-                if (response) {
+                if (response.success) {
 
                     res.json({
 
                         isSuccess: true,
-                        response: response,
+                        response: response.data,
                         error: false
                     })
                 } else {
@@ -930,7 +943,7 @@ module.exports = {
                 res.json({
                     isSuccess: false,
                     response: {},
-                    error: error
+                    error: error.data
                 });
             });
 
