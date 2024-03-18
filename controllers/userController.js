@@ -549,7 +549,7 @@ module.exports = {
             const requestData = {
                 selectedDishes: req.body.selectedDishes,
                 tableId: req.body.tableId,
-                supplierStatus: re.body.supplierStatus,
+                supplierStatus: req.body.supplierStatus,
                 supplierId: req.userId
             };
     
