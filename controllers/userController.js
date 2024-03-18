@@ -574,7 +574,7 @@ module.exports = {
                 return res.json({
                     isSuccess: false,
                     response: {},
-                    error: response.data
+                    error: "error"
                 });
             }
         } catch (error) {

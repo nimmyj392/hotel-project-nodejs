@@ -250,10 +250,8 @@ module.exports = {
                 const startOfDay = new Date().setHours(0, 0, 0, 0);
                 const endOfDay = new Date().setHours(23, 59, 59, 999);
     
-                
                 const existingMenu = await todaysMenuDB.findOne({
-                    foodId: requestData.dishId,
-                    category: requestData.category,
+                    name: requestData.name,
                     startTime: { $gte: startOfDay },
                     endTime: { $lte: endOfDay }
                 });
@@ -261,7 +259,7 @@ module.exports = {
                 if (existingMenu) {
                     const response = {
                         isSuccess: false,
-                        data: "Food item already added for today.",
+                        data: "A food item with the same name has already been added for today.",
                         error: true
                     };
                     resolve(response);
@@ -312,6 +310,7 @@ module.exports = {
             }
         });
     },
+    
     
     addTableHelper: (requestData) => {
 
