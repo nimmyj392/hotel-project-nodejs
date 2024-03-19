@@ -249,19 +249,21 @@ module.exports = {
             try {
              
     
+                const today = new Date().toISOString().split('T')[0];  
+
                 const existingMenu = await todaysMenuDB.findOne({
-                    name: requestData.name,
-                    date: new Date().toISOString().split('T')[0] 
+                  name: requestData.name,
+                  createdAt: { $gte: new Date(today), $lt: new Date(today + 'T23:59:59.999Z') }
                 });
-    
+                
                 if (existingMenu) {
-                    const response = {
-                        isSuccess: false,
-                        data: "A food item with the same name has already been added for today.",
-                        error: true
-                    };
-                    resolve(response);
-                    return;
+                  const response = {
+                    isSuccess: false,
+                    data: "A food item with the same name has already been added for today.",
+                    error: true
+                  };
+                  resolve(response);
+                  return;
                 }
     
                 const foodItem = await dishDB.findById(requestData.dishId);

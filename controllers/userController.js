@@ -240,7 +240,7 @@ module.exports = {
 
                 const response = await userHelper.addTodaysMenuHelper(requestData);
 
-                if (response) {
+                if (response.success) {
                     responses.push({
                         isSuccess: true,
                         response: response.data,
