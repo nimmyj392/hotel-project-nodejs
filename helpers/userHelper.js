@@ -249,11 +249,12 @@ module.exports = {
             try {
              
     
-                const today = new Date().toISOString().split('T')[0];  
+                const today = new Date().toISOString().split('T')[0];
 
                 const existingMenu = await todaysMenuDB.findOne({
                   name: requestData.name,
-                  createdAt: { $gte: new Date(today), $lt: new Date(today + 'T23:59:59.999Z') }
+                  createdAt: { $gte: new Date(today), $lt: new Date(today + 'T23:59:59.999Z') },
+                  deleted: false 
                 });
                 
                 if (existingMenu) {
@@ -265,6 +266,7 @@ module.exports = {
                   resolve(response);
                   return;
                 }
+                
     
                 const foodItem = await dishDB.findById(requestData.dishId);
                 if (!foodItem) {
