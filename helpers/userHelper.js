@@ -294,7 +294,7 @@ module.exports = {
                 const savedMenu = await todaysMenu.save();
     
                 const response = {
-                    isSuccess: true,
+                    success: true,
                     data: {
                         ...savedMenu.toObject(),
                         price: foodItem.price,
