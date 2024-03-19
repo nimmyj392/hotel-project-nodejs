@@ -216,7 +216,7 @@ module.exports = {
                     data: "Missing required parameters",
                     error: true
                 };
-                resolve(response);
+                reject(response);
                 return;
             }
             if (requestData.stock <= 0) {
@@ -225,7 +225,7 @@ module.exports = {
                     data: "Stock value must be greater than zero",
                     error: true
                 };
-                resolve(response);
+                reject(response);
                 return;
             }
             let startTime, endTime;
@@ -263,7 +263,7 @@ module.exports = {
                     data: "A food item with the same name has already been added for today.",
                     error: true
                   };
-                  resolve(response);
+                  reject(response);
                   return;
                 }
                 
@@ -275,7 +275,7 @@ module.exports = {
                         data: "Food item not found.",
                         error: true
                     };
-                    resolve(response);
+                    reject(response);
                     return;
                 }
     

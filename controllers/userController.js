@@ -235,11 +235,9 @@ module.exports = {
         const responses = [];
 
         for (const requestData of requestDataArray) {
-
             try {
-
                 const response = await userHelper.addTodaysMenuHelper(requestData);
-
+    
                 if (response.success) {
                     responses.push({
                         isSuccess: true,
@@ -260,9 +258,8 @@ module.exports = {
                     error: error.data
                 });
             }
-          
         }
-
+    
         res.json(responses);
     }),
     deleteMenuItem: (async (req, res) => {
