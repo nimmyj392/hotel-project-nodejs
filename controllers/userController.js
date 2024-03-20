@@ -644,6 +644,80 @@ module.exports = {
             });
         });
     },
+    updateOrder: async (req, res) => {
+        const requestData = {
+            orderId: req.body.orderId,
+            chefStatus: req.body.chefStatus
+        };
+    
+        try {
+            userHelper.updateOrderHelper(requestData)
+                .then((response) => {
+                    if (response.success) {
+                        res.json({
+                            isSuccess: true,
+                            response: response.data,
+                           error:false
+                        });
+                    } else {
+                        res.json({
+                            IsSuccess: false,
+                            response: {},
+                            error: response.data,
+                        });
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error updating order:', error);
+                    res.status(500).json({
+                        isSuccess: false,
+                        response: {},
+                        error:'Internal Server Error'
+                    });
+                });
+        } catch (error) {
+            console.error('Error updating order:', error);
+            res.status(500).json({
+                IsSuccess: false,
+                response:{},
+                error: 'Internal Server Error'
+            });
+        }
+    },
+
+     getAllDeliveredOrders : async(req, res) =>{
+        try {
+         
+            const deliveredOrdersResponse = await userHelper.getDeliveredOrdersHelper();
+          
+            if (deliveredOrdersResponse.success) {
+                res.json({
+                    isSuccess: true,
+                    response: deliveredOrdersResponse.data,
+                    error: false
+                });
+            } else {
+              
+                res.json({
+                    isSuccess: false,
+                    response: {},
+                    error: deliveredOrdersResponse.data
+                });
+            }
+        } catch (error) {
+       
+            console.error('Error fetching delivered orders:', error);
+            res.status(500).json({
+                isSuccess: false,
+                response: {},
+                error: 'Internal Server Error'
+            });
+        }
+    },
+    
+
+
+
     addFoodInOrderList: (req, res) => {
         const { orderId, foodId, quantity } = req.body;
     

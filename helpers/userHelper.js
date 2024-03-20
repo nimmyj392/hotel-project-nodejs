@@ -532,6 +532,8 @@ module.exports = {
                     price: foodItem.price,
                     totalPriceForItem: orderData.quantity * foodItem.price
                 });
+                foodItem.stock -= orderData.quantity;
+            await foodItem.save();
             }
     
             const newOrder = new orderDB({
@@ -551,6 +553,7 @@ module.exports = {
                     error: true
                 };
             } else {
+                dbResponse.tableStatus = true;
                 return {
                     success: true,
                     data: {
@@ -589,6 +592,12 @@ module.exports = {
                     data: "Supplier not found or failed to update status.",
                     error: true
                 };
+            }
+            if (requestData.newStatus === 'ready_to_payment') {
+                await orderDB.updateMany(
+                    { supplierId: requestData.supplierId },
+                    { $set: { tableStatus: false } }
+                );
             }
     
             return {
@@ -664,7 +673,77 @@ module.exports = {
             }
         });
     },
+    updateOrderHelper: (requestData) => {
+        return new Promise(async (resolve, reject) => {
+           
+                const order = await orderDB.findById(requestData.orderId);
     
+                if (!order) {
+                    const response = {
+                        success: false,
+                        data: "Order not found",
+                        error: true
+                    };
+                    reject(response);
+                    return; 
+                }
+    
+                order.chefStatus = requestData.chefStatus;
+    
+                if (requestData.chefStatus === 'cancelled') {
+                    for (let item of order.items) {
+                        try {
+                            const todayMenuItem = await todaysMenuDB.findOne({ foodId: item.foodId });
+    
+                            if (todayMenuItem) {
+                                todayMenuItem.stock += item.quantity;
+                                await todayMenuItem.save();
+                            }
+                        } catch (error) {
+                            console.error("Error in updating stock:", error);
+                            const response = {
+                                success: false,
+                                data: "Error in updating stock",
+                                error: true
+                            };
+                            reject(response);
+                            return; 
+                        }
+                    }
+                }
+    
+                const updatedOrder = await order.save();
+                const response = {
+                    success: true,
+                    data: updatedOrder,
+                    error: false
+                };
+                resolve(response);
+           
+        });
+    },
+    
+    getDeliveredOrdersHelper:() => {
+        return new Promise(async (resolve, reject) => {
+            const deliveredOrders = await orderDB.find({ chefStatus: 'delivered' });
+        if(deliveredOrders){
+            const response = {
+                success: true,
+                data:deliveredOrders,
+                error: false
+            };
+            resolve(response);
+        }
+        else{
+            const response = {
+                success: false,
+                data: "No orders found",
+                error: true
+            };
+            reject(response);
+        }
+    })
+    },
 
 
 

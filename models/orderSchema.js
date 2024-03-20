@@ -33,7 +33,10 @@ const orderSchema = new Schema({
     type: Date,
     default: Date.now
   },
-  
+  chefStatus:{
+    type: String,
+    enum: [ 'delivered', 'cancelled']
+  },
  
   supplierStatus: {
     type: String,
@@ -41,6 +44,11 @@ const orderSchema = new Schema({
 },
   totalPrice: {
     type: Number
+  },
+  tableStatus:{
+    type: Boolean,
+    default: false
+   
   },
   deleted: {
     type: Boolean,
