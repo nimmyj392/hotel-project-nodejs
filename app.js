@@ -20,8 +20,8 @@ const db = require("./config/database");
 const userRouter = require("./routes/user");
 const managerRouter = require("./routes/manager");
 
-app.use(express.json()); // Replacing bodyParser.json()
-app.use(express.urlencoded({ extended: true })); // Replacing bodyParser.urlencoded()
+app.use(express.json()); 
+app.use(express.urlencoded({ extended: true })); 
 
 app.use(cors({
     origin: "*",

@@ -321,7 +321,7 @@ module.exports = {
         } else if (validatorResponse && validatorResponse.value) {
             userHelper.addTableHelper(requestData).then((response) => {
 
-                if (response) {
+                if (response.success) {
                     res.json({
 
                         isSuccess: true,

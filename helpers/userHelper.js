@@ -322,7 +322,7 @@ module.exports = {
             if (existingTable) {
                 const response = {
                     success: false,
-                    message: "A table with the same name already exists."
+                    data: "A table with the same name already exists."
                 };
                 resolve(response);
                 return;
@@ -614,10 +614,16 @@ module.exports = {
         }
     },
     
+  
+
     getAllOrdersForChefHelper: (requestData, today) => {
         return new Promise(async (resolve, reject) => {
             try {
-                const orderList = await orderDB.find({ deleted: requestData.deleted, createdAt: { $gte: today } });
+                const orderList = await orderDB.find({ deleted: requestData.deleted, createdAt: { $gte: today } })
+                    .populate({
+                        path: 'tableId',
+                        select: 'name status' 
+                    });
     
                 if (orderList.length === 0) {
                     const response = {
@@ -650,6 +656,8 @@ module.exports = {
                             _id: order._id,
                             foodName: order.foodName,
                             tableId: order.tableId,
+                            tableName: order.tableId ? order.tableId.name : "Unknown", // Extract the tableName from the populated tableId field
+                            tableStatus: order.tableId ? order.tableId.status : "Unknown", // Extract the tableStatus from the populated tableId field
                             items: order.items,
                             supplierId: order.supplierId,
                             chefUpdates: order.chefUpdates,
@@ -673,6 +681,7 @@ module.exports = {
             }
         });
     },
+    
     updateOrderHelper: (requestData) => {
         return new Promise(async (resolve, reject) => {
            
