@@ -318,7 +318,7 @@ module.exports = {
 
         return new Promise(async (resolve, reject) => {
 
-            const existingTable = await tableDB.findOne({ name: requestData.name });
+            const existingTable = await Table.findOne({ name: requestData.name });
             if (existingTable) {
                 const response = {
                     success: false,
@@ -331,7 +331,7 @@ module.exports = {
                 name: requestData.name,
                 status: requestData.status
             }
-            const dbResponse = await tableDB.insertMany(insertData).then((res) => {
+            const dbResponse = await Table.insertMany(insertData).then((res) => {
 
                 if (res) {
                     const response = {
@@ -358,7 +358,7 @@ module.exports = {
         return new Promise(async (resolve, reject) => {
 
 
-            const tables = await tableDB.find({ deleted: requestData.deleted });
+            const tables = await Table.find({ deleted: requestData.deleted });
             if (tables) {
                 const response = {
                     success: true,
@@ -384,7 +384,7 @@ module.exports = {
     selectOrDeselectTableHelper: (requestData) => {
         return new Promise(async (resolve, reject) => {
 
-            const table = await tableDB.findOne({ _id: requestData.tableId });
+            const table = await Table.findOne({ _id: requestData.tableId });
             if (!table) {
                 const response = {
                     isSuccess: false,
@@ -848,7 +848,7 @@ module.exports = {
                 } else {
                     const ordersWithDetails = await Promise.all(orderList.map(async (order) => {
                         const supplier = await supplierDB.findById(order.supplierId);
-                        const table = await tableDB.findById(order.tableId);
+                        const table = await Table.findById(order.tableId);
                         const itemsWithFoodDetails = await Promise.all(order.items.map(async (item) => {
                             const food = await foodDB.findById(item.foodId);
                             return {
@@ -977,7 +977,7 @@ module.exports = {
                 }
     
                 const supplier = await supplierDB.findById(order.supplierId);
-                const table = await tableDB.findById(order.tableId);
+                const table = await Table.findById(order.tableId);
     
                 return {
                     ...order.toObject(),
