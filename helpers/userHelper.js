@@ -47,7 +47,7 @@ module.exports = {
                 let data = {
                     name: requestData.name,
                      description: requestData.description,
-                    image: requestData.image,
+                     image: requestData.imageUrl,
                     category: requestData.category,
                     preparedBy: requestData.preparedBy
                 };

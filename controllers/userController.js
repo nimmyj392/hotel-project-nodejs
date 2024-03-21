@@ -29,7 +29,8 @@ module.exports = {
             name: req.body.name,
             description: req.body.description,
             category: req.body.category,
-            preparedBy: req.userId
+            preparedBy: req.userId,
+            imageUrl: req.body.imageUrl 
         }
 
         const validatorResponse = await userDataValidator.addFoodByChefValidator(requestData);
