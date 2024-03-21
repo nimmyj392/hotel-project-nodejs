@@ -27,6 +27,6 @@ const tableSchema = new Schema({
     }
 }, { timestamps: true })
 
-const Table = mongoose.model("table", tableSchema);
+const Table = mongoose.model("Table", tableSchema);
 
 module.exports = Table;
