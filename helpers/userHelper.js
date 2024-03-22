@@ -614,80 +614,82 @@ module.exports = {
         }
     },
     
-  
-
-   getAllOrdersForChefHelper: (requestData, today) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            const orderList = await orderDB.find({ deleted: requestData.deleted, createdAt: { $gte: today } })
-                .populate('tableId');
-
-            if (orderList.length === 0) {
+    getAllOrdersForChefHelper: (requestData, today) => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const orderList = await orderDB.find({ deleted: requestData.deleted, createdAt: { $gte: today } })
+                    .populate('tableId');
+    
+                if (orderList.length === 0) {
+                    const response = {
+                        isSuccess: true,
+                        data: "No orders found for today.",
+                        error: false
+                    };
+                    resolve(response);
+                    return;
+                }
+    
+                for (let order of orderList) {
+                    try {
+                        const table = await Table.findById(order.tableId);
+                        order.tableName = table ? table.name : "Unknown";
+                    } catch (error) {
+                        console.log("Error fetching table name:", error);
+                        order.tableName = "Unknown";
+                    }
+    
+                    for (let item of order.items) {
+                        try {
+                            const food = await foodDB.findById(item.foodId);
+                            item.foodName = food ? food.name : "Unknown";
+                        } catch (error) {
+                            console.log("Error fetching food:", error);
+                            item.foodName = "Unknown";
+                        }
+                    }
+                }
+                const filteredOrders = orderList.map(order => ({
+                    _id: order._id,
+                    tableId: {
+                        _id: order.tableId._id,
+                        name: order.tableId.name
+                    },
+                    tableName: order.tableName,
+                    tableStatus: order.tableId ? order.tableId.status : "Unknown",
+                    items: order.items.map(item => ({
+                        foodId: item.foodId,
+                        quantity: item.quantity,
+                        paid: item.paid,
+                        price: item.price,
+                        foodName: item.foodName
+                    })),
+                    supplierId: order.supplierId,
+                    totalPrice: order.totalPrice,
+                    deleted: order.deleted,
+                    createdAt: order.createdAt,
+                    __v: order.__v
+                }));
+    
                 const response = {
-                    success: false,
-                    data: "No orders found for today.",
+                    isSuccess: true,
+                    data: filteredOrders,
+                    error: false
+                };
+                resolve(response);
+            } catch (error) {
+                console.log(error);
+                const response = {
+                    isSuccess: false,
+                    data: error,
                     error: true
                 };
                 reject(response);
-                return;
             }
-
-            for (let order of orderList) {
-                try {
-                    // Assuming 'tableDB' is the model for the collection containing table details
-                    const table = await Table.findById(order.tableId);
-                    order.tableName = table ? table.name : "Unknown";
-                } catch (error) {
-                    console.log("Error fetching table name:", error);
-                    order.tableName = "Unknown";
-                }
-
-                try {
-                    const food = await foodDB.findById(order.items[0].foodId);
-                    order.foodName = food ? food.name : "Unknown";
-
-                    order.items.forEach(item => {
-                        item.foodName = order.foodName;
-                    });
-                } catch (error) {
-                    console.log("Error fetching food:", error);
-                    order.foodName = "Unknown";
-                }
-            }
-
-            const response = {
-                success: true,
-                data: orderList.map(order => {
-                    return {
-                        _id: order._id,
-                        foodName: order.foodName,
-                        tableId: order.tableId,
-                        tableName: order.tableName,
-                        tableStatus: order.tableId ? order.tableId.status : "Unknown",
-                        items: order.items,
-                        supplierId: order.supplierId,
-                        chefUpdates: order.chefUpdates,
-                        totalPrice: order.totalPrice,
-                        deleted: order.deleted,
-                        createdAt: order.createdAt,
-                        __v: order.__v
-                    }
-                }),
-                error: false
-            };
-            resolve(response);
-        } catch (error) {
-            console.log(error)
-            const response = {
-                success: false,
-                data: error,
-                error: true
-            };
-            reject(response);
-        }
-    });
-},
-
+        });
+    },
+    
+    
     updateOrderHelper: (requestData) => {
         return new Promise(async (resolve, reject) => {
            
